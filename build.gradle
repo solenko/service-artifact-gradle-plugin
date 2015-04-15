@@ -48,20 +48,24 @@ test {
     }
 }
 /* Whenever we're building an artifact, we should run the tests */
-assemble.dependsOn test
+assemble.dependsOn check
 ////////
 
 
 
 // Release/publication
 //////////////////////
-
-/* Ensure we're creating a source jar for publication */
+/* Add the sources jar to the list of artifacts to publish */
 task sourcesJar(type: Jar, dependsOn: classes) {
     classifier = 'sources'
     from sourceSets.main.allSource
 }
+task groovydocJar(type: Jar, dependsOn: groovydoc) {
+    classifier = 'groovydoc'
+    from groovydoc.destinationDir
+}
 artifacts {
     archives sourcesJar
+    archives groovydocJar
 }
 //////////////////////
