@@ -6,5 +6,7 @@ import org.gradle.api.Project
 class ServiceArtifactPlugin implements Plugin<Project> {
     void apply(Project project) {
         project.apply plugin: 'application'
+
+        project.extensions.create('service', ServiceArtifactExtension, project)
     }
 }

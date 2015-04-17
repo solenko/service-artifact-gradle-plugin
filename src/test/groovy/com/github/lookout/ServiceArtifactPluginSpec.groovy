@@ -19,4 +19,14 @@ class ServiceArtifactPluginSpec extends Specification {
         project instanceof Project
         project.plugins.findPlugin(ServiceArtifactPlugin.class)
     }
+
+    def "project should have the application plugin"() {
+        expect:
+        project.plugins.findPlugin('application')
+    }
+
+    def "project should include the service{} DSL"() {
+        expect:
+        project.service instanceof ServiceArtifactExtension
+    }
 }
