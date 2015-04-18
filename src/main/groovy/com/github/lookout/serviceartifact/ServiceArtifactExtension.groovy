@@ -2,7 +2,10 @@ package com.github.lookout.serviceartifact
 
 import groovy.transform.TypeChecked
 import org.gradle.api.Project
-import org.ajoberstar.grgit.Grgit
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+
+import com.github.lookout.serviceartifact.scm.AbstractScmHandler
 
 /**
  * ServiceArtifactExtension provides the service{} DSL into Gradle files which
@@ -12,9 +15,12 @@ import org.ajoberstar.grgit.Grgit
 class ServiceArtifactExtension {
     protected final Project project
     protected final Map<String, String> env
+    protected Logger logger = LoggerFactory.getLogger(ServiceArtifactExtension.class)
+    /** List of scm handler classes, in priority order */
+    private final List<Class<AbstractScmHandler>> scmHandlerImpls = [scm.GerritHandler.class]
+    /** SCM Handler appropriate for this execution */
+    private AbstractScmHandler scmHandler
 
-    private final String GERRIT_CHANGE = 'GERRIT_CHANGE_NUMBER'
-    private final String GERRIT_PATCH  = 'GERRIT_PATCHSET_NUMBER'
 
     ServiceArtifactExtension(final Project project) {
         this(project, [:])
@@ -24,6 +30,26 @@ class ServiceArtifactExtension {
                             final Map<String, String> env) {
         this.project = project
         this.env = env
+    } 
+
+    /**
+     * Lazily look up our SCM Handler
+     */
+    AbstractScmHandler getScmHandler() {
+        if (this.scmHandler != null) {
+            return this.scmHandler
+        }
+
+        this.scmHandlerImpls.each { Class<AbstractScmHandler> h ->
+            AbstractScmHandler handler = h.build(this.env)
+
+            if (handler.isAvailable()) {
+                this.scmHandler = handler
+                return
+            }
+        }
+
+        return this.scmHandler
     }
 
     /**
@@ -31,25 +57,13 @@ class ServiceArtifactExtension {
      * environment
      */
     String version(final String baseVersion) {
-        if (isUnderGerrit()) {
-            return String.format("%s.%s.%s",
-                                 baseVersion,
-                                 env[GERRIT_CHANGE],
-                                 env[GERRIT_PATCH])
-        }
-        return baseVersion
-    }
+        AbstractScmHandler handler = getScmHandler()
 
-    /**
-     * Return true if our current build is executing inside of a
-     * Gerrit-context, i.e. the GERRIT_CHANGE_NUMBER environment variable is
-     * preset
-     */
-    protected boolean isUnderGerrit() {
-        if (this.env == null) {
-            return false
+        if (handler instanceof AbstractScmHandler) {
+            return handler.annotatedVersion(baseVersion)
         }
-        return this.env.containsKey(GERRIT_CHANGE)
+
+        return baseVersion
     }
 }
 

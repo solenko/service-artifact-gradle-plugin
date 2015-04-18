@@ -12,6 +12,16 @@ class ServiceArtifactExtensionSpec extends Specification {
         this.project = ProjectBuilder.builder().build()
     }
 
+
+    /** Return a sample Gerrit environment for testing Gerrit specific
+     * behaviors */
+    Map<String, String> gerritEnv() {
+        return [
+                'GERRIT_CHANGE_NUMBER' : 1,
+                'GERRIT_PATCHSET_NUMBER' : 1,
+                'GERRIT_PATCHSET_REVISION' : '0xded']
+    }
+
     def "should be construct-able"() {
         given:
         def extension = new ServiceArtifactExtension(this.project)
@@ -23,36 +33,25 @@ class ServiceArtifactExtensionSpec extends Specification {
 
 
 class ServiceArtifactExtensionInstanceSpec extends ServiceArtifactExtensionSpec {
-    protected ServiceArtifactExtension extension
 
-    def setup() {
-        this.extension = new ServiceArtifactExtension(this.project)
-    }
-
-    def "isUnderGerrit() should be false by default"() {
-        expect:
-        !this.extension.isUnderGerrit()
-    }
-
-    def "isUnderGerrit() should be false if the env has Gerrit environment vars"() {
-        given:
-        this.extension = new ServiceArtifactExtension(this.project,
-            ['GERRIT_CHANGE_NUMBER' : 23])
+    def "getScmHandler() instantiate a handler instance"() {
+        given: "we're inside of a Gerrit-triggered Jenkins job"
+        def ext = new ServiceArtifactExtension(this.project, gerritEnv())
 
         expect:
-        this.extension.isUnderGerrit()
+        ext.scmHandler instanceof scm.GerritHandler
     }
+
 }
 
 class ServiceArtifactExtensionVersionSpec extends ServiceArtifactExtensionSpec {
-    ServiceArtifactExtension extension
 
     def "version() should return an unmolested string by default"() {
         given:
-        this.extension = new ServiceArtifactExtension(this.project)
+        def ext = new ServiceArtifactExtension(this.project)
 
         when:
-        String version = this.extension.version('1.0')
+        String version = ext.version('1.0')
 
         then:
         version == '1.0'
@@ -60,15 +59,12 @@ class ServiceArtifactExtensionVersionSpec extends ServiceArtifactExtensionSpec {
 
     def "version() in a Gerrit build should update the version properly"() {
         given:
-        this.extension = new ServiceArtifactExtension(this.project, [
-            'GERRIT_CHANGE_NUMBER' : 23,
-            'GERRIT_PATCHSET_NUMBER' : 1,
-        ])
+        def ext = new ServiceArtifactExtension(this.project, gerritEnv())
 
         when:
-        String version = this.extension.version('1.0')
+        String version = ext.version('1.0')
 
         then:
-        version == '1.0.23.1'
+        version == '1.0.1.1+0xded'
     }
 }
