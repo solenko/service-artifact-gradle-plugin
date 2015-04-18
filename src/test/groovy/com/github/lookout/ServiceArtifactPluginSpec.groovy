@@ -25,6 +25,11 @@ class ServiceArtifactPluginSpec extends Specification {
         project.plugins.findPlugin('application')
     }
 
+    def "project should have the git plugin"() {
+        expect:
+        project.plugins.findPlugin('org.ajoberstar.release-base')
+    }
+
     def "project should include the service{} DSL"() {
         expect:
         project.service instanceof ServiceArtifactExtension
