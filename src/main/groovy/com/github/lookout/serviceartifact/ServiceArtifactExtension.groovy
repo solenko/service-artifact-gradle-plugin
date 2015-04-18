@@ -1,4 +1,4 @@
-package com.github.lookout
+package com.github.lookout.serviceartifact
 
 import groovy.transform.TypeChecked
 import org.gradle.api.Project

@@ -1,4 +1,4 @@
-package com.github.lookout
+package com.github.lookout.serviceartifact
 
 import spock.lang.*
 
@@ -11,7 +11,7 @@ class ServiceArtifactExtensionSpec extends Specification {
     def setup() {
         this.project = ProjectBuilder.builder().build()
     }
-    
+
     def "should be construct-able"() {
         given:
         def extension = new ServiceArtifactExtension(this.project)

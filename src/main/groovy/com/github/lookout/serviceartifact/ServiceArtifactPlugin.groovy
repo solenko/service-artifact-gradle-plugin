@@ -1,4 +1,4 @@
-package com.github.lookout
+package com.github.lookout.serviceartifact
 
 import org.gradle.api.Plugin
 import org.gradle.api.Project
