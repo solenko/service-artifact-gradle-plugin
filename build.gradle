@@ -40,10 +40,14 @@ dependencies {
     compile localGroovy()
 
     /* Git Gradle plugin (base components) */
-    compile 'org.ajoberstar:gradle-git:1.1.0+'
+    compile "org.ajoberstar:gradle-git:1.1.0+"
 
     /* asciidoctor gradle plugin */
-    compile 'org.asciidoctor:asciidoctor-gradle-plugin:1.5.2'
+    compile "org.asciidoctor:asciidoctor-gradle-plugin:1.5.2"
+
+    /* JRuby related plugins */
+    compile "com.github.jruby-gradle:jruby-gradle-plugin:0.1.15+"
+
 
     testCompile('org.spockframework:spock-core:1.0-groovy-2.3') {
         exclude module: 'groovy-all'

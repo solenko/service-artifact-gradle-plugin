@@ -55,6 +55,14 @@ class ServiceArtifactExtension {
         return this._scmHandler
     }
 
+    void jruby(Closure c) {
+        this.project.apply plugin: 'com.github.jruby-gradle.base'
+    }
+
+    void useJRuby() {
+        this.jruby {}
+    }
+
     /**
      * Return the appropriately computed version string based on our executing
      * environment

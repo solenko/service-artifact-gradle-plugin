@@ -35,8 +35,36 @@ class ServiceArtifactPluginSpec extends Specification {
         project.plugins.findPlugin('org.asciidoctor.gradle.asciidoctor')
     }
 
+    def "project should NOT have the jruby-gradle base plugin by default"() {
+        expect:
+        !project.plugins.findPlugin('com.github.jruby-gradle.base')
+    }
+
     def "project should include the service{} DSL"() {
         expect:
         project.service instanceof ServiceArtifactExtension
+    }
+}
+
+
+class ServiceArtifactPluginWithJRubySpec extends ServiceArtifactPluginSpec {
+    def "when using the jruby{} closure the plugin should be added"() {
+        given:
+        project.service {
+            jruby {}
+        }
+
+        expect:
+        project.plugins.findPlugin('com.github.jruby-gradle.base')
+    }
+
+    def "using useJRuby() should work like jruby{}"() {
+        given:
+        project.service {
+            useJRuby()
+        }
+
+        expect:
+        project.plugins.findPlugin('com.github.jruby-gradle.base')
     }
 }
