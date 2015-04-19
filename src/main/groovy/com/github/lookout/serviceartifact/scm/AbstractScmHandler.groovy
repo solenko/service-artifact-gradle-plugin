@@ -12,6 +12,9 @@ abstract class AbstractScmHandler {
      */
     abstract boolean isAvailable()
 
+    /** Return the current revision of the tree */
+    abstract String getRevision()
+
     /** Return an annotated version string with data provided by the handler */
     abstract String annotatedVersion(String baseVersion)
 

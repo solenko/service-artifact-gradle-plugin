@@ -25,6 +25,16 @@ class GerritHandler extends AbstractScmHandler {
     }
 
     /**
+     * Return the value of GERRIT_PATCHSET_REVISION if present
+     */
+    String getRevision() {
+        if (this.env.containsKey(GERRIT_REVISION)) {
+            return this.env[GERRIT_REVISION]
+        }
+        return ""
+    }
+
+    /**
      * Return a {@code String} based on the environment variables provided with
      * Gerrit changeset information
      */
@@ -33,7 +43,7 @@ class GerritHandler extends AbstractScmHandler {
                              baseVersion,
                              this.env[GERRIT_CHANGE],
                              this.env[GERRIT_PATCH],
-                             this.env[GERRIT_REVISION])
+                             this.revision)
     }
 
 

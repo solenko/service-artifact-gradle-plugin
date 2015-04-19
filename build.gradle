@@ -9,6 +9,7 @@ buildscript {
 
 apply plugin: 'groovy'
 apply plugin: 'maven'
+apply plugin: 'idea'
 apply plugin: "com.jfrog.bintray"
 
 version = '0.1.0'
@@ -73,3 +74,6 @@ artifacts {
     archives groovydocJar
 }
 //////////////////////
+
+
+defaultTasks 'check', 'assemble'

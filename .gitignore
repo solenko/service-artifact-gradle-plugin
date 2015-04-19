@@ -4,3 +4,6 @@ build/
 # Ignore Gradle GUI config
 gradle-app.setting
 *.sw*
+// intellij
+*.ipr
+*.iws
