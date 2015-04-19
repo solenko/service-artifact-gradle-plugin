@@ -1,8 +1,10 @@
 package com.github.lookout.serviceartifact.scm
 
+import org.eclipse.jgit.errors.RepositoryNotFoundException
 import spock.lang.*
 
 import org.ajoberstar.grgit.Grgit
+import org.ajoberstar.grgit.Repository
 
 class GitHandlerSpec extends Specification {
     def "isAvailable() should be false by default"() {
@@ -29,6 +31,8 @@ class GitHandlerSpec extends Specification {
     def "annotatedVersion() when .git is NOT present should no-op"() {
         given:
         def handler = new GitHandler([:])
+        GroovySpy(Grgit, global: true)
+        1 * Grgit.open(_) >> { throw new RepositoryNotFoundException('Spock!') }
 
         when:
         String version = handler.annotatedVersion('1.0')
@@ -37,10 +41,13 @@ class GitHandlerSpec extends Specification {
         version == '1.0'
     }
 
-    @Ignore
     def "annotatedVersion() when .git is present should include SHA+1"() {
         given:
-        def handler = new GitHandler([:])
+        def handler = Spy(GitHandler, constructorArgs: [[:]])
+        Repository repoMock = GroovyMock()
+        1 * repoMock.head() >> repoMock
+        1 * repoMock.getId() >> '0xdeadbeef'
+        _ * handler.getProperty('git') >> repoMock
 
         when:
         String version = handler.annotatedVersion('1.0')

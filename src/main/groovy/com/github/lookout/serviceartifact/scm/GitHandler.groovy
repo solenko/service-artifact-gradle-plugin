@@ -2,6 +2,7 @@ package com.github.lookout.serviceartifact.scm
 
 import groovy.transform.TypeChecked
 import org.ajoberstar.grgit.Grgit
+import org.eclipse.jgit.errors.RepositoryNotFoundException
 
 /**
  * Git handler for a project in a traditional Git repository
@@ -22,11 +23,14 @@ class GitHandler extends AbstractScmHandler {
     }
 
     String getRevision() {
-        return ''
+        return this.git?.head().getId()
     }
 
     String annotatedVersion(String baseVersion) {
-        return baseVersion
+        if (this.git == null) {
+            return baseVersion
+        }
+        return String.format("%s+%s", baseVersion, this.revision)
     }
 
     @Override
@@ -38,7 +42,11 @@ class GitHandler extends AbstractScmHandler {
     /** Return an {@code Grgit} object for internal use */
     private Grgit getGit() {
         if (this._git == null) {
-            this._git = Grgit.open('.')
+            try {
+                this._git = Grgit.open('.')
+            }
+            catch (RepositoryNotFoundException ex) {
+            }
         }
 
         return this._git
