@@ -1,9 +1,14 @@
 buildscript {
     repositories {
         jcenter()
+
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
     }
     dependencies {
         classpath "com.jfrog.bintray.gradle:gradle-bintray-plugin:1.1"
+        classpath "com.gradle.publish:plugin-publish-plugin:0.9.0"
     }
 }
 
@@ -11,8 +16,9 @@ apply plugin: 'groovy'
 apply plugin: 'maven'
 apply plugin: 'idea'
 apply plugin: "com.jfrog.bintray"
+apply plugin: "com.gradle.plugin-publish"
 
-version = '0.1.0'
+version = '0.1.1'
 group = 'com.github.lookout'
 description = 'Gradle plugin for building a prim and proper Lookout service artifact'
 sourceCompatibility = '1.6'
@@ -93,10 +99,33 @@ bintray {
             name = project.version
             vcsTag = "v${project.version}"
             desc = project.description
+            attributes = ['gradle-plugin' : 'com.github.lookout.service-artifact:com.github.lookout:service-artifact-plugin']
         }
     }
 }
 bintrayUpload.dependsOn assemble
+
+pluginBundle {
+    website = 'https://github.com/lookout/service-artifact-gradle-plugin'
+    vcsUrl = 'https://github.com/lookout/service-artifact-gradle-plugin'
+    description = project.description
+    tags = ['jruby', 'microservice', 'service']
+
+    plugins {
+        ServiceArtifactPlugin {
+            id = 'com.github.lookout.service-artifact'
+            displayName = 'Service Artifact Plugin'
+        }
+    }
+}
+
+task publish(type: Exec) {
+    group 'Publishing'
+    description "Tag and publish the plugin"
+    dependsOn bintrayUpload, publishPlugins
+    commandLine 'git', 'tag', '-s'
+}
+
 //////////////////////
 
 
