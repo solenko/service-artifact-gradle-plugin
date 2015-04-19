@@ -1,0 +1,21 @@
+buildscript {
+    repositories {
+        jcenter()
+        mavenLocal()
+    }
+
+    dependencies {
+        classpath 'com.github.lookout:service-artifact-plugin:0.1.5'
+    }
+}
+
+apply plugin: 'com.github.lookout.service-artifact'
+
+version = service.version('1.0')
+description = 'A sample JRuby service to built into an artifact'
+group = 'com.github.lookout.service-artifact'
+
+service {
+    jruby {
+    }
+}
