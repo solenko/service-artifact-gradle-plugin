@@ -18,7 +18,7 @@ apply plugin: 'idea'
 apply plugin: "com.jfrog.bintray"
 apply plugin: "com.gradle.plugin-publish"
 
-version = '0.1.4'
+version = '0.1.5'
 group = 'com.github.lookout'
 description = 'Gradle plugin for building a prim and proper Lookout service artifact'
 sourceCompatibility = '1.6'
@@ -29,6 +29,10 @@ targetCompatibility = '1.6'
 ////////////////////////
 repositories {
     jcenter()
+
+    maven {
+        url "https://plugins.gradle.org/m2/"
+    }
 }
 
 dependencies {
@@ -38,6 +42,8 @@ dependencies {
     /* Git Gradle plugin (base components) */
     compile 'org.ajoberstar:gradle-git:1.1.0+'
 
+    /* asciidoctor gradle plugin */
+    compile 'org.asciidoctor:asciidoctor-gradle-plugin:1.5.2'
 
     testCompile('org.spockframework:spock-core:1.0-groovy-2.3') {
         exclude module: 'groovy-all'

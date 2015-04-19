@@ -30,6 +30,11 @@ class ServiceArtifactPluginSpec extends Specification {
         project.plugins.findPlugin('org.ajoberstar.release-base')
     }
 
+    def "project should have the asciidoctor plugin"() {
+        expect:
+        project.plugins.findPlugin('org.asciidoctor.gradle.asciidoctor')
+    }
+
     def "project should include the service{} DSL"() {
         expect:
         project.service instanceof ServiceArtifactExtension
