@@ -75,6 +75,28 @@ artifacts {
     archives sourcesJar
     archives groovydocJar
 }
+
+bintray {
+    user = project.bintrayUser
+    key = project.bintrayKey
+    publish = true
+    dryRun = false
+    configurations = ['archives']
+
+    pkg {
+        userOrg = 'lookout'
+        repo = 'systems'
+        name = 'service-artifact-plugin'
+        labels = ['gradle', 'jruby', 'git', 'microservice']
+
+        version {
+            name = project.version
+            vcsTag = "v${project.version}"
+            desc = project.description
+        }
+    }
+}
+bintrayUpload.dependsOn assemble
 //////////////////////
 
 
