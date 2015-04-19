@@ -112,7 +112,7 @@ pluginBundle {
     tags = ['jruby', 'microservice', 'service']
 
     plugins {
-        ServiceArtifactPlugin {
+        serviceArtifactPlugin {
             id = 'com.github.lookout.service-artifact'
             displayName = 'Service Artifact Plugin'
         }
