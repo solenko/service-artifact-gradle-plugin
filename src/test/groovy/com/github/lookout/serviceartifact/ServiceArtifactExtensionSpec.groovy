@@ -48,7 +48,8 @@ class ServiceArtifactExtensionVersionSpec extends ServiceArtifactExtensionSpec {
 
     def "version() should return an unmolested string by default"() {
         given:
-        def ext = new ServiceArtifactExtension(this.project)
+        def ext = Spy(ServiceArtifactExtension, constructorArgs: [this.project])
+        1 * ext.getScmHandler() >> null
 
         when:
         String version = ext.version('1.0')

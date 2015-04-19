@@ -17,9 +17,12 @@ class ServiceArtifactExtension {
     protected final Map<String, String> env
     protected Logger logger = LoggerFactory.getLogger(ServiceArtifactExtension.class)
     /** List of scm handler classes, in priority order */
-    private final List<Class<AbstractScmHandler>> scmHandlerImpls = [scm.GerritHandler.class]
+    private final List<Class<AbstractScmHandler>> scmHandlerImpls = [
+            scm.GerritHandler.class,
+            scm.GitHandler.class,
+    ]
     /** SCM Handler appropriate for this execution */
-    private AbstractScmHandler scmHandler
+    protected AbstractScmHandler _scmHandler
 
 
     ServiceArtifactExtension(final Project project) {
@@ -36,20 +39,20 @@ class ServiceArtifactExtension {
      * Lazily look up our SCM Handler
      */
     AbstractScmHandler getScmHandler() {
-        if (this.scmHandler != null) {
-            return this.scmHandler
+        if (this._scmHandler != null) {
+            return this._scmHandler
         }
 
-        this.scmHandlerImpls.each { Class<AbstractScmHandler> h ->
-            AbstractScmHandler handler = h.build(this.env)
+        this.scmHandlerImpls.find {
+            AbstractScmHandler handler = it.build(this.env)
 
             if (handler.isAvailable()) {
-                this.scmHandler = handler
-                return
+                this._scmHandler = handler
+                return true
             }
         }
 
-        return this.scmHandler
+        return this._scmHandler
     }
 
     /**
@@ -57,10 +60,8 @@ class ServiceArtifactExtension {
      * environment
      */
     String version(final String baseVersion) {
-        AbstractScmHandler handler = getScmHandler()
-
-        if (handler instanceof AbstractScmHandler) {
-            return handler.annotatedVersion(baseVersion)
+        if (this.scmHandler instanceof AbstractScmHandler) {
+            return this.scmHandler.annotatedVersion(baseVersion)
         }
 
         return baseVersion

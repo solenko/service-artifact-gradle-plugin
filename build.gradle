@@ -54,6 +54,7 @@ test {
 }
 /* Whenever we're building an artifact, we should run the tests */
 assemble.dependsOn check
+jar.dependsOn check
 ////////
 
 
@@ -69,6 +70,7 @@ task groovydocJar(type: Jar, dependsOn: groovydoc) {
     classifier = 'groovydoc'
     from groovydoc.destinationDir
 }
+
 artifacts {
     archives sourcesJar
     archives groovydocJar

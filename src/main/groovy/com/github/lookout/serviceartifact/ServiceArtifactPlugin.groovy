@@ -9,6 +9,9 @@ class ServiceArtifactPlugin implements Plugin<Project> {
         /* Add the git plugin for finding out our projects meta-data */
         project.apply plugin: 'org.ajoberstar.release-base'
 
-        project.extensions.create('service', ServiceArtifactExtension, project, System.env)
+        project.extensions.create('service',
+                                    ServiceArtifactExtension,
+                                    project,
+                                    System.env)
     }
 }
