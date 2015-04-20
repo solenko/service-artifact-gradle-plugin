@@ -16,6 +16,10 @@ description = 'A sample JRuby service to built into an artifact'
 group = 'com.github.lookout.service-artifact'
 
 service {
-    jruby {
-    }
+    useJRuby()
+}
+
+dependencies {
+    gems "rubygems:sinatra:1.4.6"
+    gems "rubygems:puma:2.11.2"
 }
