@@ -4,6 +4,7 @@ import spock.lang.*
 
 import org.gradle.api.Project
 import org.gradle.api.Plugin
+import org.gradle.api.Task
 import org.gradle.testfixtures.ProjectBuilder
 
 class ServiceArtifactPluginSpec extends Specification {
@@ -18,11 +19,6 @@ class ServiceArtifactPluginSpec extends Specification {
         expect:
         project instanceof Project
         project.plugins.findPlugin(ServiceArtifactPlugin.class)
-    }
-
-    def "project should have the application plugin"() {
-        expect:
-        project.plugins.findPlugin('application')
     }
 
     def "project should have the git plugin"() {
@@ -48,23 +44,46 @@ class ServiceArtifactPluginSpec extends Specification {
 
 
 class ServiceArtifactPluginWithJRubySpec extends ServiceArtifactPluginSpec {
+    boolean hasPlugins(Project project) {
+        return (project.plugins.findPlugin('com.github.jruby-gradle.base') &&
+                project.plugins.findPlugin('com.github.jruby-gradle.jar') &&
+                project.plugins.findPlugin('com.github.johnrengelman.shadow'))
+    }
+
+    void enableJRuby() {
+        project.service { jruby {} }
+    }
+
     def "when using the jruby{} closure the plugin should be added"() {
         given:
-        project.service {
-            jruby {}
-        }
+        enableJRuby()
 
         expect:
-        project.plugins.findPlugin('com.github.jruby-gradle.base')
+        hasPlugins(project)
     }
 
     def "using useJRuby() should work like jruby{}"() {
         given:
-        project.service {
-            useJRuby()
-        }
+        project.service { useJRuby() }
 
         expect:
-        project.plugins.findPlugin('com.github.jruby-gradle.base')
+        hasPlugins(project)
+    }
+
+    def "a shadowJar task should be present"() {
+        given:
+        enableJRuby()
+        Task shadow = project.tasks.findByName('shadowJar')
+
+        expect:
+        shadow instanceof Task
+    }
+
+    def "the default jar task should be disabled"() {
+        given:
+        enableJRuby()
+
+        expect:
+        project.tasks.findByName('jar').enabled == false
     }
 }

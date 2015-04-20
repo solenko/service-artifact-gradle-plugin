@@ -69,3 +69,40 @@ class ServiceArtifactExtensionVersionSpec extends ServiceArtifactExtensionSpec {
         version == '1.0.1.1+0xded'
     }
 }
+
+class ServiceArtifactExtensionShadowSpec extends Specification {
+    protected Project project
+    protected ServiceArtifactExtension ext
+
+    def setup() {
+        this.project = ProjectBuilder.builder().build()
+        this.project.apply plugin: 'com.github.lookout.service-artifact'
+        this.project.service { useJRuby() }
+    }
+
+    def "the shadowJar task must be present"() {
+        expect:
+        project.tasks.findByName('shadowJar')
+    }
+
+    def "the shadowJar baseName should be the same as the project name"() {
+        given:
+        project = ProjectBuilder.builder().withName('spock-shadow').build()
+        ext = new ServiceArtifactExtension(project)
+
+        when:
+        ext.setupJRubyShadowJar()
+
+        then:
+        project.tasks.findByName('shadowJar').baseName == project.name
+    }
+
+    def "the shadowJar has a manifest"() {
+        given:
+        def task = project.tasks.findByName('shadowJar')
+
+        expect:
+        task.manifest.attributes['Main-Class']
+
+    }
+}

@@ -1,7 +1,10 @@
 package com.github.lookout.serviceartifact
 
-import groovy.transform.TypeChecked
+import com.github.jrubygradle.jar.JRubyJarConfigurator
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import org.gradle.api.Project
+import org.gradle.api.Task
+import org.gradle.api.tasks.bundling.Jar
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -11,7 +14,6 @@ import com.github.lookout.serviceartifact.scm.AbstractScmHandler
  * ServiceArtifactExtension provides the service{} DSL into Gradle files which
  * use the plugin
  */
-@TypeChecked
 class ServiceArtifactExtension {
     protected final Project project
     protected final Map<String, String> env
@@ -55,12 +57,48 @@ class ServiceArtifactExtension {
         return this._scmHandler
     }
 
+    /** Enable the building of a JRuby service artifact */
     void jruby(Closure c) {
         this.project.apply plugin: 'com.github.jruby-gradle.base'
+        this.project.apply plugin: 'com.github.jruby-gradle.jar'
+
+        setupJRubyShadowJar()
+        disableJarTask()
     }
 
     void useJRuby() {
         this.jruby {}
+    }
+
+    /**
+     * Set up the shadowJar task for packaging up a JRuby-based artifact
+     */
+    protected void setupJRubyShadowJar() {
+        /* The java (or groovy) plugin is a pre-requisite for the shadowjar plugin
+         * to properly initialize with a shadowJar{} task
+         */
+        this.project.apply plugin: 'java'
+        this.project.apply plugin: 'com.github.johnrengelman.shadow'
+        ShadowJar shadow = this.project.tasks.findByName('shadowJar')
+
+        /* Include our Ruby code into the tree */
+        shadow.from("${this.project.projectDir}/src/main/ruby")
+
+        /* Exclude some basic stupid files from making their way in */
+        shadow.exclude '*.sw*', '*.gitkeep', '*.md'
+
+        shadow.jruby {
+            defaultMainClass()
+            defaultGems()
+        }
+    }
+
+    protected void disableJarTask() {
+        Task jarTask = this.project.tasks.findByName('jar')
+
+        if (jarTask instanceof Task) {
+            jarTask.enabled = false
+        }
     }
 
     /**
