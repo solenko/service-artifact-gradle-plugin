@@ -53,8 +53,7 @@ service {
     jruby {
         /* Include these directories into the service jar.
          *
-         * By default the `app` and `config` directory will
-         * be included as well as the `config.ru` file if it is present
+         * By default everything in src/main/ruby will be included
          */
         include 'backend', 'lib'
     }
@@ -69,15 +68,19 @@ service {
 
 dependencies {
     gems "rubygems:faraday:1.0"
+    gems "rubygems:sinatra:1.4.6"
 }
 ```
 
 ### Tasks
 
+(*NOTE:* many of these tasks are not yet implemented)
+
 #### Build
 
-* distShadowTarGz
-* distShadowZip
+* serviceTarGz
+* serviceZip
+* shadowJar
 * assemble
 
 #### Test
@@ -88,7 +91,7 @@ dependencies {
 
 #### Publish
 
-* uploadArtifacts
+* publish
 
 #### Internal-ish
 

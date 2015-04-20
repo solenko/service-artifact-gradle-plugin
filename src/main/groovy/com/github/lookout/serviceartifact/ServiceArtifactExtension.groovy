@@ -80,6 +80,7 @@ class ServiceArtifactExtension {
         this.project.apply plugin: 'java'
         this.project.apply plugin: 'com.github.johnrengelman.shadow'
         ShadowJar shadow = this.project.tasks.findByName('shadowJar')
+        this.project.tasks.findByName('assemble').dependsOn(shadow)
 
         /* Include our Ruby code into the tree */
         shadow.from("${this.project.projectDir}/src/main/ruby")
