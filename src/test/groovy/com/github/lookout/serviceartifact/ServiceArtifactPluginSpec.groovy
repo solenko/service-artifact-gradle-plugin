@@ -40,6 +40,15 @@ class ServiceArtifactPluginSpec extends Specification {
         expect:
         project.service instanceof ServiceArtifactExtension
     }
+
+    def "project should include the serviceTarGz task"() {
+        given:
+        Task t = project.tasks.findByName('serviceTarGz')
+
+        expect:
+        t instanceof Task
+        t.group == 'Service Artifact'
+    }
 }
 
 
@@ -85,5 +94,14 @@ class ServiceArtifactPluginWithJRubySpec extends ServiceArtifactPluginSpec {
 
         expect:
         project.tasks.findByName('jar').enabled == false
+    }
+
+    def "project should include the serviceZip task"() {
+        given:
+        Task t = project.tasks.findByName('serviceZip')
+
+        expect:
+        t instanceof Task
+        t.group == 'Service Artifact'
     }
 }
