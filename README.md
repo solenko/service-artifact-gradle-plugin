@@ -24,7 +24,7 @@ This plugin will include the appropriate versions of the following plugins:
 
 ```gradle
 plugins {
-    id "com.github.lookout.service-artifact" version "1.0"
+    id "com.github.lookout.service-artifact" version "0.1.5"
 }
 
 /* serviceVersion is a helper method which will add SNAPSHOT when appropriate,
