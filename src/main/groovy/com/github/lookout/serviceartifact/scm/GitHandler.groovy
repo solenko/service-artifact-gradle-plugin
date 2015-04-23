@@ -46,6 +46,7 @@ class GitHandler extends AbstractScmHandler {
                 this._git = Grgit.open('.')
             }
             catch (RepositoryNotFoundException ex) {
+                this.logger.debug("Repository not found", ex)
             }
         }
 

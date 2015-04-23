@@ -12,6 +12,7 @@ buildscript {
     }
 }
 
+apply plugin: 'codenarc'
 apply plugin: 'groovy'
 apply plugin: 'maven'
 apply plugin: 'idea'
@@ -75,6 +76,12 @@ test {
 /* Whenever we're building an artifact, we should run the tests */
 assemble.dependsOn check
 jar.dependsOn check
+
+codenarc {
+    sourceSets = [sourceSets.main]
+    configFile = file('gradle/codenarc.xml')
+}
+assemble.dependsOn codenarcMain
 ////////
 
 

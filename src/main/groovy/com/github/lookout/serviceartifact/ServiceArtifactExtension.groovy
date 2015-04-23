@@ -1,10 +1,8 @@
 package com.github.lookout.serviceartifact
 
-import com.github.jrubygradle.jar.JRubyJarConfigurator
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import org.gradle.api.Project
 import org.gradle.api.Task
-import org.gradle.api.tasks.bundling.Jar
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
