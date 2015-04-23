@@ -115,4 +115,22 @@ class ServiceArtifactPluginWithJRubySpec extends ServiceArtifactPluginSpec {
         expect:
         project.tasks.findByName('jar').enabled == false
     }
+
+    def "the serviceTarGz task should depend on serviceJar"() {
+        given:
+        enableJRuby()
+        Task tar = project.tasks.findByName('serviceTarGz')
+
+        expect:
+        tar.dependsOn.find { (it instanceof Task) && (it.name == 'serviceJar') }
+    }
+
+    def "the serviceZip task should depend on serviceJar"() {
+        given:
+        enableJRuby()
+        Task tar = project.tasks.findByName('serviceZip')
+
+        expect:
+        tar.dependsOn.find { (it instanceof Task) && (it.name == 'serviceJar') }
+    }
 }

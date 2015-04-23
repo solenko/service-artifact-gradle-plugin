@@ -82,7 +82,7 @@ class ServiceArtifactExtension {
         ShadowJar shadow = this.project.tasks.findByName('shadowJar')
         this.project.tasks.remove(shadow)
 
-        this.project.task('serviceJar', type: ShadowJar) {
+        Task jar = this.project.task('serviceJar', type: ShadowJar) {
             group ServiceArtifactPlugin.GROUP_NAME
             description "Build a JRuby-based service jar"
 
@@ -103,7 +103,9 @@ class ServiceArtifactExtension {
                 defaultGems()
             }
         }
-        this.project.tasks.findByName('serviceJar').configurations.add(this.project.configurations.getByName('jrubyJar'))
+        jar.configurations.add(this.project.configurations.getByName('jrubyJar'))
+        this.project.tasks.findByName('serviceTarGz').dependsOn(jar)
+        this.project.tasks.findByName('serviceZip').dependsOn(jar)
     }
 
     protected void disableJarTask() {
