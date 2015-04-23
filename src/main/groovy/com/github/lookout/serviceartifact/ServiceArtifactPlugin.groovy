@@ -19,14 +19,21 @@ class ServiceArtifactPlugin implements Plugin<Project> {
                                     project,
                                     System.env)
 
+        project.task('prepareServiceScripts') {
+            group GROUP_NAME
+            description "stub task for preparing the bin scripts for the artifact"
+        }
+
         project.task('serviceTarGz', type: Tar) {
             group GROUP_NAME
             description "Create a .tar.gz artifact containing the service"
+            dependsOn project.tasks.prepareServiceScripts
         }
 
         project.task('serviceZip', type: Zip) {
             group GROUP_NAME
             description "Create a .zip artifact containing the service"
+            dependsOn project.tasks.prepareServiceScripts
         }
 
         project.task('assembleService') {
