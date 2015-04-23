@@ -2,10 +2,15 @@ package com.github.lookout.serviceartifact.scm
 
 import groovy.transform.TypeChecked
 
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+
 @TypeChecked
 abstract class AbstractScmHandler {
     /** Supplied environment variables */
     protected Map<String, String> env
+
+    protected Logger logger = LoggerFactory.getLogger(this.class)
 
     /** Return true if the runtime environment has the necessary information to
      * make this SCM Handler available for use

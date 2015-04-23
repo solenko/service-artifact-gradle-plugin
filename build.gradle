@@ -12,13 +12,14 @@ buildscript {
     }
 }
 
+apply plugin: 'codenarc'
 apply plugin: 'groovy'
 apply plugin: 'maven'
 apply plugin: 'idea'
 apply plugin: "com.jfrog.bintray"
 apply plugin: "com.gradle.plugin-publish"
 
-version = '0.1.5'
+version = '0.1.6'
 group = 'com.github.lookout'
 description = 'Gradle plugin for building a prim and proper Lookout service artifact'
 sourceCompatibility = '1.6'
@@ -75,6 +76,12 @@ test {
 /* Whenever we're building an artifact, we should run the tests */
 assemble.dependsOn check
 jar.dependsOn check
+
+codenarc {
+    sourceSets = [sourceSets.main]
+    configFile = file('gradle/codenarc.xml')
+}
+assemble.dependsOn codenarcMain
 ////////
 
 
