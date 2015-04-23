@@ -2,9 +2,11 @@ package com.github.lookout.serviceartifact
 
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.tasks.bundling.Zip
+import org.gradle.api.tasks.bundling.Tar
 
 class ServiceArtifactPlugin implements Plugin<Project> {
-    private final String GROUP_NAME = 'Service Artifact'
+    static final String GROUP_NAME = 'Service Artifact'
 
     void apply(Project project) {
         /* Add the git plugin for finding out our projects meta-data */
@@ -17,12 +19,12 @@ class ServiceArtifactPlugin implements Plugin<Project> {
                                     project,
                                     System.env)
 
-        project.task('serviceTarGz') {
+        project.task('serviceTarGz', type: Tar) {
             group GROUP_NAME
             description "Create a .tar.gz artifact containing the service"
         }
 
-        project.task('serviceZip') {
+        project.task('serviceZip', type: Zip) {
             group GROUP_NAME
             description "Create a .zip artifact containing the service"
         }

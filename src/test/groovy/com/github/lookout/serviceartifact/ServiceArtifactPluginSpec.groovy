@@ -5,6 +5,8 @@ import spock.lang.*
 import org.gradle.api.Project
 import org.gradle.api.Plugin
 import org.gradle.api.Task
+import org.gradle.api.tasks.bundling.Zip
+import org.gradle.api.tasks.bundling.Tar
 import org.gradle.testfixtures.ProjectBuilder
 
 class ServiceArtifactPluginSpec extends Specification {
@@ -46,7 +48,16 @@ class ServiceArtifactPluginSpec extends Specification {
         Task t = project.tasks.findByName('serviceTarGz')
 
         expect:
-        t instanceof Task
+        t instanceof Tar
+        t.group == 'Service Artifact'
+    }
+
+    def "project should include the serviceZip task"() {
+        given:
+        Task t = project.tasks.findByName('serviceZip')
+
+        expect:
+        t instanceof Zip
         t.group == 'Service Artifact'
     }
 }
@@ -79,10 +90,19 @@ class ServiceArtifactPluginWithJRubySpec extends ServiceArtifactPluginSpec {
         hasPlugins(project)
     }
 
-    def "a shadowJar task should be present"() {
+    def "a shadowJar task should not be present"() {
         given:
         enableJRuby()
         Task shadow = project.tasks.findByName('shadowJar')
+
+        expect:
+        shadow == null
+    }
+
+    def "a serviceJar task should be present"() {
+        given:
+        enableJRuby()
+        Task shadow = project.tasks.findByName('serviceJar')
 
         expect:
         shadow instanceof Task
@@ -94,14 +114,5 @@ class ServiceArtifactPluginWithJRubySpec extends ServiceArtifactPluginSpec {
 
         expect:
         project.tasks.findByName('jar').enabled == false
-    }
-
-    def "project should include the serviceZip task"() {
-        given:
-        Task t = project.tasks.findByName('serviceZip')
-
-        expect:
-        t instanceof Task
-        t.group == 'Service Artifact'
     }
 }

@@ -80,26 +80,26 @@ class ServiceArtifactExtensionShadowSpec extends Specification {
         this.project.service { useJRuby() }
     }
 
-    def "the shadowJar task must be present"() {
+    def "the serviceJar task must be present"() {
         expect:
-        project.tasks.findByName('shadowJar')
+        project.tasks.findByName('serviceJar')
     }
 
-    def "the shadowJar baseName should be the same as the project name"() {
+    def "the serviceJar baseName should be the same as the project name"() {
         given:
         project = ProjectBuilder.builder().withName('spock-shadow').build()
-        ext = new ServiceArtifactExtension(project)
 
         when:
-        ext.setupJRubyShadowJar()
+        this.project.apply plugin: 'com.github.lookout.service-artifact'
+        this.project.service { useJRuby() }
 
         then:
-        project.tasks.findByName('shadowJar').baseName == project.name
+        project.tasks.findByName('serviceJar').baseName == project.name
     }
 
-    def "the shadowJar has a manifest"() {
+    def "the serviceJar has a manifest"() {
         given:
-        def task = project.tasks.findByName('shadowJar')
+        def task = project.tasks.findByName('serviceJar')
 
         expect:
         task.manifest.attributes['Main-Class']

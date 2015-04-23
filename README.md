@@ -80,7 +80,7 @@ dependencies {
 
 * serviceTarGz
 * serviceZip
-* shadowJar
+* serviceJar
 * assemble
 
 #### Test
