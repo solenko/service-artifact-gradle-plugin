@@ -77,6 +77,7 @@ class ServiceArtifactExtension {
          */
         this.project.apply plugin: 'java'
         this.project.apply plugin: 'com.github.johnrengelman.shadow'
+
         ShadowJar shadow = this.project.tasks.findByName('shadowJar')
         this.project.tasks.remove(shadow)
 
@@ -90,25 +91,33 @@ class ServiceArtifactExtension {
             from(this.project.sourceSets.main.output)
 
             /* Exclude some basic stupid files from making their way in */
-            exclude '*.sw*', '*.gitkeep', '*.md',
+            exclude '*.swp', '*.gitkeep', '*.md',
                     'META-INF/INDEX.LIST', 'META-INF/*.SF',
                     'META-INF/*.DSA', 'META-INF/*.RSA'
-            dependsOn this.project.tasks.findByName('assemble'),
-                        this.project.tasks.findByName('compileJava')
+
+            dependsOn this.project.tasks.findByName('assemble')
 
             jruby {
                 defaultMainClass()
                 defaultGems()
             }
         }
+
+        /* Add the configuration which includes the proper JRuby-related dependencies
+         * from the jruby-gradle-jar-plugin
+         */
         jar.configurations.add(this.project.configurations.getByName('jrubyJar'))
 
         Task tar = this.project.tasks.findByName('serviceTarGz')
         Task zip = this.project.tasks.findByName('serviceZip')
 
+        /* Ensure our service (distribution) artifact tasks depend on this
+         * jar task
+         */
         [tar, zip].each {
             it.dependsOn(jar)
             it.from(jar.outputs.files)
+            it.into('bin') { from("${this.project.projectDir}/bin") }
         }
     }
 
