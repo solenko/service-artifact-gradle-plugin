@@ -104,8 +104,14 @@ class ServiceArtifactExtension {
             }
         }
         jar.configurations.add(this.project.configurations.getByName('jrubyJar'))
-        this.project.tasks.findByName('serviceTarGz').dependsOn(jar)
-        this.project.tasks.findByName('serviceZip').dependsOn(jar)
+
+        Task tar = this.project.tasks.findByName('serviceTarGz')
+        Task zip = this.project.tasks.findByName('serviceZip')
+
+        [tar, zip].each {
+            it.dependsOn(jar)
+            it.from(jar.outputs.files)
+        }
     }
 
     protected void disableJarTask() {
