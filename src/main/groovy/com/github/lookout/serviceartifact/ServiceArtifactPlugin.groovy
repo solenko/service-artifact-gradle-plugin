@@ -28,5 +28,11 @@ class ServiceArtifactPlugin implements Plugin<Project> {
             group GROUP_NAME
             description "Create a .zip artifact containing the service"
         }
+
+        project.task('assembleService') {
+            group GROUP_NAME
+            description "Assemble all the service artifacts"
+            dependsOn project.tasks.serviceZip, project.tasks.serviceTarGz
+        }
     }
 }

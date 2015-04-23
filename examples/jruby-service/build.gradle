@@ -5,7 +5,7 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.github.lookout:service-artifact-plugin:0.1.6'
+        classpath 'com.github.lookout:service-artifact-plugin:0.1.7'
     }
 }
 

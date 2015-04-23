@@ -60,6 +60,15 @@ class ServiceArtifactPluginSpec extends Specification {
         t instanceof Zip
         t.group == 'Service Artifact'
     }
+
+    def "project should include a assembleService task"() {
+        given:
+        Task t = project.tasks.findByName('assembleService')
+
+        expect:
+        t instanceof Task
+        t.group == 'Service Artifact'
+    }
 }
 
 
