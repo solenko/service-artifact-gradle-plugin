@@ -16,9 +16,7 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" exported="" name="Gradle: org.ajoberstar:gradle-git:1.1.0" level="project" />
     <orderEntry type="library" exported="" name="Gradle: org.ajoberstar:grgit:1.1.0" level="project" />
-    <orderEntry type="library" exported="" name="Gradle: com.github.zafarkhaja:java-semver:0.8.0" level="project" />
     <orderEntry type="library" exported="" name="Gradle: org.eclipse.jgit:org.eclipse.jgit:3.7.0.201502260915-r" level="project" />
     <orderEntry type="library" exported="" name="Gradle: org.eclipse.jgit:org.eclipse.jgit.ui:3.7.0.201502260915-r" level="project" />
     <orderEntry type="library" exported="" name="Gradle: com.jcraft:jsch.agentproxy.jsch:0.0.7" level="project" />

@@ -23,11 +23,6 @@ class ServiceArtifactPluginSpec extends Specification {
         project.plugins.findPlugin(ServiceArtifactPlugin.class)
     }
 
-    def "project should have the git plugin"() {
-        expect:
-        project.plugins.findPlugin('org.ajoberstar.release-base')
-    }
-
     def "project should have the asciidoctor plugin"() {
         expect:
         project.plugins.findPlugin('org.asciidoctor.gradle.asciidoctor')
@@ -89,6 +84,7 @@ class ServiceArtifactPluginWithJRubySpec extends ServiceArtifactPluginSpec {
     }
 
     void enableJRuby() {
+        project.version = '1.0'
         project.service { jruby {} }
     }
 

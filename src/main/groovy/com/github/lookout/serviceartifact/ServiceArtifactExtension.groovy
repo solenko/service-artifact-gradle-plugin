@@ -107,17 +107,30 @@ class ServiceArtifactExtension {
          * from the jruby-gradle-jar-plugin
          */
         jar.configurations.add(this.project.configurations.getByName('jrubyJar'))
+        setupCompressedArchives(this.project)
+    }
 
-        Task tar = this.project.tasks.findByName('serviceTarGz')
-        Task zip = this.project.tasks.findByName('serviceZip')
+    /**
+     * Properly update the compressed archive tasks with the appropriate
+     * configurations after the serviceJar task has been set up
+     *
+     * @param project
+     * @return
+     */
+    protected void setupCompressedArchives(Project project) {
+        Task tar = project.tasks.findByName('serviceTarGz')
+        Task zip = project.tasks.findByName('serviceZip')
+        Task jar = project.tasks.findByName('serviceJar')
 
         /* Ensure our service (distribution) artifact tasks depend on this
          * jar task
          */
         [tar, zip].each {
+            String directory = String.format("%s-%s", project.name, project.version)
+
             it.dependsOn(jar)
-            it.from(jar.outputs.files)
-            it.into('bin') { from("${this.project.projectDir}/bin") }
+            it.into(directory) { from(jar.outputs.files) }
+            it.into("${directory}/bin") { from("${project.projectDir}/bin") }
         }
     }
 

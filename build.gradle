@@ -41,7 +41,7 @@ dependencies {
     compile localGroovy()
 
     /* Git Gradle plugin (base components) */
-    compile "org.ajoberstar:gradle-git:1.1.0+"
+    compile "org.ajoberstar:grgit:1.1.0+"
 
     /* asciidoctor gradle plugin */
     compile "org.asciidoctor:asciidoctor-gradle-plugin:1.5.2"
