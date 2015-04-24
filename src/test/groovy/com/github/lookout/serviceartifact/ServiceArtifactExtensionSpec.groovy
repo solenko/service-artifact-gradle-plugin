@@ -3,6 +3,7 @@ package com.github.lookout.serviceartifact
 import spock.lang.*
 
 import org.gradle.api.Project
+import org.gradle.api.Task
 import org.gradle.testfixtures.ProjectBuilder
 
 class ServiceArtifactExtensionSpec extends Specification {
@@ -72,7 +73,6 @@ class ServiceArtifactExtensionVersionSpec extends ServiceArtifactExtensionSpec {
 
 class ServiceArtifactExtensionShadowSpec extends Specification {
     protected Project project
-    protected ServiceArtifactExtension ext
 
     def setup() {
         this.project = ProjectBuilder.builder().build()
@@ -104,5 +104,34 @@ class ServiceArtifactExtensionShadowSpec extends Specification {
         expect:
         task.manifest.attributes['Main-Class']
 
+    }
+}
+
+/**
+ * Test the behaviors of the setupCompressedArchives() functionality
+ */
+class ServiceArtifactExtensionArchivesSpec extends Specification {
+    protected Project project
+
+    def setup() {
+        this.project = ProjectBuilder.builder().build()
+        this.project.apply plugin: 'com.github.lookout.service-artifact'
+        this.project.service { useJRuby() }
+    }
+
+    def "the serviceTarGz task should depend on serviceJar"() {
+        given:
+        Task tar = project.tasks.findByName('serviceTarGz')
+
+        expect:
+        tar.dependsOn.find { (it instanceof Task) && (it.name == 'serviceJar') }
+    }
+
+    def "the serviceZip task should depend on serviceJar"() {
+        given:
+        Task tar = project.tasks.findByName('serviceZip')
+
+        expect:
+        tar.dependsOn.find { (it instanceof Task) && (it.name == 'serviceJar') }
     }
 }

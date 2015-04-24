@@ -1,5 +1,6 @@
 package com.github.lookout.serviceartifact
 
+import groovy.json.JsonBuilder
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import org.gradle.api.Project
 import org.gradle.api.Task
@@ -122,6 +123,24 @@ class ServiceArtifactExtension {
         Task zip = project.tasks.findByName('serviceZip')
         Task jar = project.tasks.findByName('serviceJar')
 
+        Task version = project.tasks.create('serviceVersionInfo') {
+            group ServiceArtifactPlugin.GROUP_NAME
+            description "Generate the service artifact version information"
+
+            def versionFilePath = "${this.project.buildDir}/VERSION"
+            outputs.file(versionFilePath).upToDateWhen { false }
+
+            doFirst {
+                JsonBuilder builder = new JsonBuilder()
+                builder(buildDate: new Date(),
+                        version: project.version,
+                        name: project.name,
+                        revision: this.scmHandler?.revision,
+                        builtOn: InetAddress.localHost.hostName)
+                new File(versionFilePath).write(builder.toPrettyString())
+            }
+        }
+
         /* Ensure our service (distribution) artifact tasks depend on this
          * jar task
          */
@@ -131,6 +150,11 @@ class ServiceArtifactExtension {
             it.dependsOn(jar)
             it.into(directory) { from(jar.outputs.files) }
             it.into("${directory}/bin") { from("${project.projectDir}/bin") }
+
+            /* Pack a handy VERSION file containing some built metadata about
+             * this artifact to help trace it back to builds in the future
+             */
+            it.into(directory) { from version.outputs.files }
         }
     }
 
