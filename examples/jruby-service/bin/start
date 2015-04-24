@@ -1,0 +1,5 @@
+#!/bin/sh -x
+
+echo ">> Starting your silly service!"
+
+exec java -jar $(dirname $0)/../*.jar
