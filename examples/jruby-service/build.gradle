@@ -7,7 +7,7 @@ buildscript {
     }
 
     dependencies {
-        classpath 'gradle.plugin.com.github.lookout:service-artifact-plugin:0.1.7'
+        classpath 'gradle.plugin.com.github.lookout:service-artifact-plugin:0.1.8'
     }
 }
 
