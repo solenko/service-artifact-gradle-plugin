@@ -9,6 +9,7 @@ import org.eclipse.jgit.errors.RepositoryNotFoundException
  */
 @TypeChecked
 class GitHandler extends AbstractScmHandler {
+    private final String gitDir = '.git'
     private Grgit _git = null
 
     GitHandler(Map<String, String> environment) {
@@ -23,7 +24,7 @@ class GitHandler extends AbstractScmHandler {
     }
 
     String getRevision() {
-        return this.git?.head().getId()
+        return this.git?.head().abbreviatedId
     }
 
     String annotatedVersion(String baseVersion) {
@@ -40,10 +41,16 @@ class GitHandler extends AbstractScmHandler {
 
 
     /** Return an {@code Grgit} object for internal use */
-    private Grgit getGit() {
+    protected Grgit getGit() {
         if (this._git == null) {
             try {
-                this._git = Grgit.open('.')
+                File repoDir = findGitRoot('.')
+
+                if (!repoDir) {
+                    return null
+                }
+
+                this._git = Grgit.open(repoDir)
             }
             catch (RepositoryNotFoundException ex) {
                 this.logger.debug("Repository not found", ex)
@@ -51,5 +58,31 @@ class GitHandler extends AbstractScmHandler {
         }
 
         return this._git
+    }
+
+    /**
+     * Locate a directory, starting with our current working directory,
+     * which has a .git/ subdirectory
+     *
+     * @param currentDirectory A string representing a relative or absolute path
+     * @return File instance if we've found a git root, or null
+     */
+    protected File findGitRoot(String currentDirectory) {
+        /* this means we've been invoked recursively with a null parent */
+        if (currentDirectory == null) {
+            return null
+        }
+
+        File current = new File(currentDirectory)
+        File gitDir = getGitDirFor(current.absolutePath)
+
+        if (gitDir.isDirectory()) {
+            return current
+        }
+        return findGitRoot((new File(current.absolutePath)).parent)
+    }
+
+    protected File getGitDirFor(String absolutePath) {
+        return new File(absolutePath, this.gitDir)
     }
 }

@@ -30,9 +30,8 @@ class GitHandlerSpec extends Specification {
 
     def "annotatedVersion() when .git is NOT present should no-op"() {
         given:
-        def handler = new GitHandler([:])
-        GroovySpy(Grgit, global: true)
-        1 * Grgit.open(_) >> { throw new RepositoryNotFoundException('Spock!') }
+        def handler = Spy(GitHandler, constructorArgs: [[:]])
+        1 * handler.findGitRoot(_) >> null
 
         when:
         String version = handler.annotatedVersion('1.0')
@@ -46,7 +45,7 @@ class GitHandlerSpec extends Specification {
         def handler = Spy(GitHandler, constructorArgs: [[:]])
         Repository repoMock = GroovyMock()
         1 * repoMock.head() >> repoMock
-        1 * repoMock.getId() >> '0xdeadbeef'
+        1 * repoMock.getAbbreviatedId() >> '0xdeadbeef'
         _ * handler.getProperty('git') >> repoMock
 
         when:
