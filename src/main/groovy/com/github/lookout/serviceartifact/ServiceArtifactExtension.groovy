@@ -24,6 +24,7 @@ class ServiceArtifactExtension {
     ]
     /** SCM Handler appropriate for this execution */
     protected AbstractScmHandler _scmHandler
+    Map<String, AbstractServiceExtension> extensions = [:]
 
 
     ServiceArtifactExtension(final Project project) {
@@ -56,6 +57,41 @@ class ServiceArtifactExtension {
         return this._scmHandler
     }
 
+    /**
+     * Register an AbstractServiceExtension so we can allow extension of the service {}
+     * DSL for language specific implemtnations
+     */
+    void register(Class<AbstractServiceExtension> extension) {
+        if (extension == null) {
+            throw new InvalidServiceExtensionError("Cannot register a null service extension")
+        }
+
+        this.extensions.put(extension.closureName, extension)
+    }
+
+    //def invokeMethod(String methodName, args) {
+    //    if (this.extensions.containsKey(methodName)) {
+    //        return true
+    //    }
+    //}
+
+    /** Enable the building of a Scala artifact */
+    void scala(Closure c) {
+        this.project.apply plugin: 'scala'
+        this.project.apply plugin: 'com.github.johnrengelman.shadow'
+
+        removeDefaultShadowTask(this.project)
+
+        Task jar = this.project.task('serviceJar', type: ShadowJar)
+        disableJarTask()
+    }
+
+    void useScala(String className) {
+        this.scala {
+            mainClass className
+        }
+    }
+
     /** Enable the building of a JRuby service artifact */
     void jruby(Closure c) {
         this.project.apply plugin: 'com.github.jruby-gradle.base'
@@ -79,8 +115,7 @@ class ServiceArtifactExtension {
         this.project.apply plugin: 'java'
         this.project.apply plugin: 'com.github.johnrengelman.shadow'
 
-        ShadowJar shadow = this.project.tasks.findByName('shadowJar')
-        this.project.tasks.remove(shadow)
+        removeDefaultShadowTask(this.project)
 
         Task jar = this.project.task('serviceJar', type: ShadowJar) {
             group ServiceArtifactPlugin.GROUP_NAME
@@ -109,6 +144,11 @@ class ServiceArtifactExtension {
          */
         jar.configurations.add(this.project.configurations.getByName('jrubyJar'))
         setupCompressedArchives(this.project)
+    }
+
+    protected void removeDefaultShadowTask(Project project) {
+        ShadowJar shadow = project.tasks.findByName('shadowJar')
+        project.tasks.remove(shadow)
     }
 
     /**

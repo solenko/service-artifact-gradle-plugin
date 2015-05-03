@@ -12,10 +12,12 @@ class ServiceArtifactPlugin implements Plugin<Project> {
         /* Add the asciidoctor plugin because...docs are important */
         project.apply plugin: 'org.asciidoctor.gradle.asciidoctor'
 
-        project.extensions.create('service',
-                                    ServiceArtifactExtension,
-                                    project,
-                                    System.env)
+        ServiceArtifactExtension extension = project.extensions.create('service',
+                                                                        ServiceArtifactExtension,
+                                                                        project,
+                                                                        System.env)
+
+        extension.register(JRubyServiceExtension)
 
         project.task('prepareServiceScripts') {
             group GROUP_NAME

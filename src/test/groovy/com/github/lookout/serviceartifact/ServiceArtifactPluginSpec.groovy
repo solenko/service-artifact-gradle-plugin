@@ -38,6 +38,7 @@ class ServiceArtifactPluginSpec extends Specification {
         project.service instanceof ServiceArtifactExtension
     }
 
+
     def "project should include the serviceTarGz task"() {
         given:
         Task t = project.tasks.findByName('serviceTarGz')
@@ -125,6 +126,60 @@ class ServiceArtifactPluginWithJRubySpec extends ServiceArtifactPluginSpec {
     def "the default jar task should be disabled"() {
         given:
         enableJRuby()
+
+        expect:
+        project.tasks.findByName('jar').enabled == false
+    }
+}
+
+class ServiceArtifactPluginWithScalaSpec extends ServiceArtifactPluginSpec {
+    boolean hasPlugins(Project project) {
+        return (project.plugins.findPlugin('scala') &&
+                project.plugins.findPlugin('com.github.johnrengelman.shadow'))
+    }
+
+    void enableScala() {
+        project.version = '1.0'
+        project.service { scala {} }
+    }
+
+    def "when using the scala{} closure the plugin should be added"() {
+        given:
+        enableScala()
+
+        expect:
+        hasPlugins(project)
+    }
+
+    def "using useScala() should work like scala{}"() {
+        given:
+        project.service { useScala() }
+
+        expect:
+        hasPlugins(project)
+    }
+
+    def "a shadowJar task should not be present"() {
+        given:
+        enableScala()
+        Task shadow = project.tasks.findByName('shadowJar')
+
+        expect:
+        shadow == null
+    }
+
+    def "a serviceJar task should be present"() {
+        given:
+        enableScala()
+        Task shadow = project.tasks.findByName('serviceJar')
+
+        expect:
+        shadow instanceof Task
+    }
+
+    def "the default jar task should be disabled"() {
+        given:
+        enableScala()
 
         expect:
         project.tasks.findByName('jar').enabled == false

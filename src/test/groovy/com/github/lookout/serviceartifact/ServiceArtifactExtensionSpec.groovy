@@ -135,3 +135,49 @@ class ServiceArtifactExtensionArchivesSpec extends Specification {
         tar.dependsOn.find { (it instanceof Task) && (it.name == 'serviceJar') }
     }
 }
+
+class ServiceArtifactExtnsionExtensionSpec extends Specification {
+    protected Project project
+    protected ServiceArtifactExtension extension
+
+    def setup() {
+        this.project = ProjectBuilder.builder().build()
+        this.extension = new ServiceArtifactExtension(project, [:])
+    }
+
+    def "register should throw on null"() {
+        when:
+        extension.register(null)
+
+        then:
+        thrown(InvalidServiceExtensionError)
+    }
+
+    def "extensions should be empty by default"() {
+        expect:
+        extension.extensions.size() == 0
+    }
+
+    def "registering an extension should add to the internal mapping"() {
+        when:
+        extension.register(JRubyServiceExtension)
+
+        then:
+        extension.extensions.size() == 1
+        extension.extensions.get(JRubyServiceExtension.closureName)
+    }
+
+    @Ignore
+    def "registering an extension should make it invokable"() {
+        given:
+        def extMock = GroovyMock(ServiceArtifactExtension)
+        1 * extMock.configure(_) >> true
+
+        when:
+        extension.register(extMock as Class<ServiceArtifactExtension>)
+
+        then:
+        extension.extensions.size() == 1
+        extension.mockExt({ })
+    }
+}
