@@ -97,14 +97,6 @@ class ServiceArtifactPluginWithJRubySpec extends ServiceArtifactPluginSpec {
         hasPlugins(project)
     }
 
-    def "using useJRuby() should work like jruby{}"() {
-        given:
-        project.service { useJRuby() }
-
-        expect:
-        hasPlugins(project)
-    }
-
     def "a shadowJar task should not be present"() {
         given:
         enableJRuby()
@@ -146,14 +138,6 @@ class ServiceArtifactPluginWithScalaSpec extends ServiceArtifactPluginSpec {
     def "when using the scala{} closure the plugin should be added"() {
         given:
         enableScala()
-
-        expect:
-        hasPlugins(project)
-    }
-
-    def "using useScala() should work like scala{}"() {
-        given:
-        project.service { useScala() }
 
         expect:
         hasPlugins(project)

@@ -1,12 +1,13 @@
-package com.github.lookout.serviceartifact
+package com.github.lookout.serviceartifact.lang
 
 import spock.lang.*
 import org.gradle.api.Project
 import org.gradle.testfixtures.ProjectBuilder
+import com.github.lookout.serviceartifact.AbstractServiceExtension
 
 /**
  */
-class JRubyServiceExtensionSpec extends Specification {
+class JRubySpec extends Specification {
     protected Project project
 
     def setup() {
@@ -15,19 +16,14 @@ class JRubyServiceExtensionSpec extends Specification {
 
     def "it should implement AbstractServiceExtension"() {
         given:
-        def ext = new JRubyServiceExtension(project)
+        def ext = new JRuby(project)
 
         expect:
         ext instanceof AbstractServiceExtension
     }
-
-    def "its static getClosureName() method should return 'jruby'"() {
-        expect:
-        JRubyServiceExtension.closureName == 'jruby'
-    }
 }
 
-class JRubyServiceExtensionPluginsSpec extends JRubyServiceExtensionSpec {
+class JRubyPluginsSpec extends JRubySpec {
     boolean hasPlugins(Project project) {
         return (project.plugins.findPlugin('com.github.jruby-gradle.base') &&
                 project.plugins.findPlugin('com.github.jruby-gradle.jar') &&
@@ -36,7 +32,7 @@ class JRubyServiceExtensionPluginsSpec extends JRubyServiceExtensionSpec {
 
     def "applyPlugins should install the necessary plugins"() {
         given:
-        JRubyServiceExtension ext = new JRubyServiceExtension(project)
+        JRuby ext = new JRuby(project)
 
         when:
         ext.applyPlugins()

@@ -1,9 +1,6 @@
 package com.github.lookout.serviceartifact
 
-import groovy.json.JsonBuilder
-import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import org.gradle.api.Project
-import org.gradle.api.Task
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -24,7 +21,6 @@ class ServiceArtifactExtension {
     ]
     /** SCM Handler appropriate for this execution */
     protected AbstractScmHandler _scmHandler
-    Map<String, AbstractServiceExtension> extensions = [:]
 
 
     ServiceArtifactExtension(final Project project) {
@@ -35,7 +31,7 @@ class ServiceArtifactExtension {
                             final Map<String, String> env) {
         this.project = project
         this.env = env
-    } 
+    }
 
     /**
      * Lazily look up our SCM Handler
@@ -55,155 +51,6 @@ class ServiceArtifactExtension {
         }
 
         return this._scmHandler
-    }
-
-    /**
-     * Register an AbstractServiceExtension so we can allow extension of the service {}
-     * DSL for language specific implemtnations
-     */
-    void register(Class<AbstractServiceExtension> extension) {
-        if (extension == null) {
-            throw new InvalidServiceExtensionError("Cannot register a null service extension")
-        }
-
-        this.extensions.put(extension.closureName, extension)
-    }
-
-    //def invokeMethod(String methodName, args) {
-    //    if (this.extensions.containsKey(methodName)) {
-    //        return true
-    //    }
-    //}
-
-    /** Enable the building of a Scala artifact */
-    void scala(Closure c) {
-        this.project.apply plugin: 'scala'
-        this.project.apply plugin: 'com.github.johnrengelman.shadow'
-
-        removeDefaultShadowTask(this.project)
-
-        Task jar = this.project.task('serviceJar', type: ShadowJar)
-        disableJarTask()
-    }
-
-    void useScala(String className) {
-        this.scala {
-            mainClass className
-        }
-    }
-
-    /** Enable the building of a JRuby service artifact */
-    void jruby(Closure c) {
-        this.project.apply plugin: 'com.github.jruby-gradle.base'
-        this.project.apply plugin: 'com.github.jruby-gradle.jar'
-
-        setupJRubyShadowJar()
-        disableJarTask()
-    }
-
-    void useJRuby() {
-        this.jruby {}
-    }
-
-    /**
-     * Set up the shadowJar task for packaging up a JRuby-based artifact
-     */
-    protected void setupJRubyShadowJar() {
-        /* The java (or groovy) plugin is a pre-requisite for the shadowjar plugin
-         * to properly initialize with a shadowJar{} task
-         */
-        this.project.apply plugin: 'java'
-        this.project.apply plugin: 'com.github.johnrengelman.shadow'
-
-        removeDefaultShadowTask(this.project)
-
-        Task jar = this.project.task('serviceJar', type: ShadowJar) {
-            group ServiceArtifactPlugin.GROUP_NAME
-            description "Build a JRuby-based service jar"
-
-            /* Include our Ruby code into the tree */
-            from("${this.project.projectDir}/src/main/ruby")
-            /* Include our main source sets output, including the JarBootstrap code */
-            from(this.project.sourceSets.main.output)
-
-            /* Exclude some basic stupid files from making their way in */
-            exclude '*.swp', '*.gitkeep', '*.md',
-                    'META-INF/INDEX.LIST', 'META-INF/*.SF',
-                    'META-INF/*.DSA', 'META-INF/*.RSA'
-
-            dependsOn this.project.tasks.findByName('assemble')
-
-            jruby {
-                defaultMainClass()
-                defaultGems()
-            }
-        }
-
-        /* Add the configuration which includes the proper JRuby-related dependencies
-         * from the jruby-gradle-jar-plugin
-         */
-        jar.configurations.add(this.project.configurations.getByName('jrubyJar'))
-        setupCompressedArchives(this.project)
-    }
-
-    protected void removeDefaultShadowTask(Project project) {
-        ShadowJar shadow = project.tasks.findByName('shadowJar')
-        project.tasks.remove(shadow)
-    }
-
-    /**
-     * Properly update the compressed archive tasks with the appropriate
-     * configurations after the serviceJar task has been set up
-     *
-     * @param project
-     * @return
-     */
-    protected void setupCompressedArchives(Project project) {
-        Task tar = project.tasks.findByName('serviceTarGz')
-        Task zip = project.tasks.findByName('serviceZip')
-        Task jar = project.tasks.findByName('serviceJar')
-
-        Task version = project.tasks.create('serviceVersionInfo') {
-            group ServiceArtifactPlugin.GROUP_NAME
-            description "Generate the service artifact version information"
-
-            def versionFilePath = "${this.project.buildDir}/VERSION"
-            outputs.file(versionFilePath).upToDateWhen { false }
-
-            doFirst {
-                JsonBuilder builder = new JsonBuilder()
-                builder(buildDate: new Date(),
-                        version: project.version,
-                        name: project.name,
-                        revision: this.scmHandler?.revision,
-                        builtOn: InetAddress.localHost.hostName)
-                new File(versionFilePath).write(builder.toPrettyString())
-            }
-        }
-
-        /* Ensure our service (distribution) artifact tasks depend on this
-         * jar task
-         */
-        [tar, zip].each {
-            String directory = String.format("%s-%s", project.name, project.version)
-
-            it.dependsOn(jar)
-            it.into(directory) { from(jar.outputs.files) }
-            it.into("${directory}/bin") { from("${project.projectDir}/bin") }
-
-            /* Pack a handy VERSION file containing some built metadata about
-             * this artifact to help trace it back to builds in the future
-             */
-            it.into(directory) { from version.outputs.files }
-        }
-    }
-
-    protected void disableJarTask() {
-        Task jarTask = this.project.tasks.findByName('jar')
-
-        if (jarTask instanceof Task) {
-            jarTask.enabled = false
-        }
     }
 
     /**

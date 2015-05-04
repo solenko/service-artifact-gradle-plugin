@@ -9,26 +9,18 @@ buildscript {
 
     dependencies {
         classpath 'com.github.lookout:service-artifact-plugin:0.1.9'
-        classpath 'com.github.jengelman.gradle.plugins:shadow:1.2.1'
     }
 }
 
-apply plugin: 'scala'
 apply plugin: 'com.github.lookout.service-artifact'
-apply plugin: 'com.github.johnrengelman.shadow'
 
 version = service.version('1.0')
 description = 'A sample Scala service to built into an artifact'
 group = 'com.github.lookout.service-artifact'
 
 service {
-    /* TODO: Implement */
-    //useScala()
-}
-
-shadowJar {
-    manifest {
-        attributes 'Main-Class' : 'com.github.lookout.serviceartifact.BasicServer'
+    scala {
+        mainClass 'com.github.lookout.serviceartifact.BasicServer'
     }
 }
 
