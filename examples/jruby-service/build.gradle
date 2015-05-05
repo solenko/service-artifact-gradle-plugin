@@ -7,7 +7,7 @@ buildscript {
     }
 
     dependencies {
-        classpath 'gradle.plugin.com.github.lookout:service-artifact-plugin:0.1.8'
+        classpath 'gradle.plugin.com.github.lookout:service-artifact-plugin:0.1.9'
     }
 }
 
@@ -17,9 +17,19 @@ version = service.version('1.0')
 description = 'A sample JRuby service to built into an artifact'
 group = 'com.github.lookout.service-artifact'
 
+
 service {
-    useJRuby()
+    jruby {
+    }
 }
+
+
+
+/* Bump to the latest JRuby for some fixings until the jruby-gradle-plugin
+ * pulls in the latest by default
+ */
+jruby.defaultVersion = '1.7.20'
+
 
 dependencies {
     gems "rubygems:sinatra:1.4.6"
