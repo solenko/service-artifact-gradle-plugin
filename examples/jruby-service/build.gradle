@@ -7,7 +7,7 @@ buildscript {
     }
 
     dependencies {
-        classpath 'gradle.plugin.com.github.lookout:service-artifact-plugin:0.1.9'
+        classpath 'gradle.plugin.com.github.lookout:service-artifact-plugin:0.1.10'
     }
 }
 
@@ -22,13 +22,6 @@ service {
     jruby {
     }
 }
-
-
-
-/* Bump to the latest JRuby for some fixings until the jruby-gradle-plugin
- * pulls in the latest by default
- */
-jruby.defaultVersion = '1.7.20'
 
 
 dependencies {

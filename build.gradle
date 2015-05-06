@@ -19,7 +19,7 @@ apply plugin: 'idea'
 apply plugin: "com.jfrog.bintray"
 apply plugin: "com.gradle.plugin-publish"
 
-version = '0.1.9'
+version = '0.1.10'
 group = 'com.github.lookout'
 description = 'Gradle plugin for building a prim and proper Lookout service artifact'
 sourceCompatibility = '1.6'
@@ -47,7 +47,7 @@ dependencies {
     compile "org.asciidoctor:asciidoctor-gradle-plugin:1.5.2"
 
     /* JRuby related plugins */
-    compile "com.github.jruby-gradle:jruby-gradle-plugin:0.1.15+"
+    compile "com.github.jruby-gradle:jruby-gradle-plugin:0.1.17+"
     compile "com.github.jruby-gradle:jruby-gradle-jar-plugin:0.1.3+"
 
     /* Shadow jar plugin for building self-contained jar artifacts */

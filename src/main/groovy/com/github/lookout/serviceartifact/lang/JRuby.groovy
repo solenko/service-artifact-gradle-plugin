@@ -31,6 +31,7 @@ class JRuby extends AbstractServiceExtension {
     void applyPlugins(Project project) {
         this.project.apply plugin: 'com.github.jruby-gradle.base'
         this.project.apply plugin: 'com.github.jruby-gradle.jar'
+
         /* The java (or groovy) plugin is a pre-requisite for the shadowjar plugin
          * to properly initialize with a shadowJar{} task
          */
