@@ -56,6 +56,7 @@ service {
          * By default everything in src/main/ruby will be included
          */
         include 'backend', 'lib'
+        mainScript 'backend/main'
     }
 
     /* scripts inside of bin/ will override the defaults,
