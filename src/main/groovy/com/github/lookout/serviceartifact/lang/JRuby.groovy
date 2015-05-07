@@ -12,9 +12,52 @@ import org.gradle.api.Task
  */
 class JRuby extends AbstractServiceExtension {
     static final String CLOSURE_NAME = 'jruby'
+    final String JAR_TASK = 'serviceJar'
 
     protected Project project
 
+    /**
+     * Class encapsulating the DSL inside of the service { jruby {} } closure
+     */
+    class JRubyDSL {
+        protected Project project
+
+        JRubyDSL(Project project) {
+            this.project = project
+        }
+
+        /**
+         * Include the listed directories and files inside of the JRuby-based artifact
+         * @param args
+         */
+        void include(Object ... args) {
+            if (args != null) {
+                Task serviceJar = this.project.tasks.getByName(JAR_TASK)
+                args.each { Object path ->
+                    /* If the arg is a directory, we want to put that into the jar
+                     * with the same name, not changing the path at all
+                     */
+                    if ((new File(path)).isDirectory()) {
+                        serviceJar.into(path) { from path }
+                    }
+                    else {
+                        serviceJar.from path
+                    }
+                }
+            }
+        }
+
+        /**
+         * Provide a custom start script for the executable jar artifact
+         */
+        void mainScript(String script) {
+            this.project.tasks.getByName('jrubyJavaBootstrap') {
+                jruby {
+                    initScript = script
+                }
+            }
+        }
+    }
 
     JRuby(Project project) {
         this.project = project
@@ -26,6 +69,9 @@ class JRuby extends AbstractServiceExtension {
         setupJRubyShadowJar()
         setupCompressedArchives(this.project, serviceExtension.scmHandler)
         disableJarTask()
+
+        extraConfig.delegate = new JRubyDSL(this.project)
+        extraConfig.call(this)
     }
 
     void applyPlugins(Project project) {
@@ -45,7 +91,7 @@ class JRuby extends AbstractServiceExtension {
     protected void setupJRubyShadowJar() {
         removeDefaultShadowTask(this.project)
 
-        Task jar = this.project.task('serviceJar', type: ShadowJar) {
+        Task jar = this.project.task(JAR_TASK, type: ShadowJar) {
             group ServiceArtifactPlugin.GROUP_NAME
             description "Build a JRuby-based service jar"
 
