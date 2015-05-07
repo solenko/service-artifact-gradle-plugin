@@ -61,6 +61,8 @@ service {
 
     /* scripts inside of bin/ will override the defaults,
      * but this closure can be used to source additional scripts
+     *
+     * NOTE: NOT YET IMPLEMENTED
      */
     scripts {
         include 'examples/bin'
