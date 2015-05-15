@@ -107,6 +107,8 @@ class JRuby extends AbstractServiceExtension {
 
             dependsOn this.project.tasks.findByName('assemble')
 
+            mergeServiceFiles()
+
             jruby {
                 defaultMainClass()
                 defaultGems()
