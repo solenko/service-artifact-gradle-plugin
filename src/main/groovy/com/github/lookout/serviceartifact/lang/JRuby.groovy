@@ -107,6 +107,12 @@ class JRuby extends AbstractServiceExtension {
 
             dependsOn this.project.tasks.findByName('assemble')
 
+            /* This is necessary when using projects that use things like
+            Jackson's polymorphic deserialization support such as
+            DropWizard configured via META-INF/services entries that
+            need merging. There's almost no reason not to do this all the time. */
+            mergeServiceFiles()
+
             jruby {
                 defaultMainClass()
                 defaultGems()
