@@ -1,6 +1,7 @@
 buildscript {
     repositories {
         jcenter()
+        mavenLocal()
 
         maven {
           url "https://plugins.gradle.org/m2/"
@@ -8,10 +9,11 @@ buildscript {
     }
 
     dependencies {
-        classpath 'gradle.plugins.com.github.lookout:service-artifact-plugin:0.2.0'
-        /* Needed for gradleTest
+        //classpath 'gradle.plugins.com.github.lookout:service-artifact-plugin:0.2.0'
+        // Needed for gradleTest
         classpath 'com.github.lookout:service-artifact-plugin:%%VERSION%%'
-        */
+        //classpath 'com.github.lookout:service-artifact-plugin:0.2.0'
+        //
     }
 }
 
@@ -31,9 +33,6 @@ service {
 dependencies {
     gems "rubygems:sinatra:1.4.6"
     gems "rubygems:puma:2.11.2"
-
-    rubyDebug 'rubygems:ruby-debug-ide:0.4.30+'
-    rubyDebug 'rubygems:ruby-debug-base:0.10.4+'
 }
 
 
