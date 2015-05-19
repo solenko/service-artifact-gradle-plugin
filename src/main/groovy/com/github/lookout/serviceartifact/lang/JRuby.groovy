@@ -2,9 +2,10 @@ package com.github.lookout.serviceartifact.lang
 
 import com.github.lookout.serviceartifact.AbstractServiceExtension
 import com.github.lookout.serviceartifact.ServiceArtifactPlugin
-import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import org.gradle.api.Project
 import org.gradle.api.Task
+
+import com.github.jrubygradle.jar.JRubyJar
 
 /**
  * Implement the "jruby {}" configurator in the service extension
@@ -51,10 +52,9 @@ class JRuby extends AbstractServiceExtension {
          * Provide a custom start script for the executable jar artifact
          */
         void mainScript(String script) {
-            this.project.tasks.getByName('jrubyJavaBootstrap') {
-                jruby {
-                    initScript = script
-                }
+            Task jar = this.project.tasks.getByName(JAR_TASK)
+            jar.jruby {
+                initScript script
             }
         }
     }
@@ -66,32 +66,22 @@ class JRuby extends AbstractServiceExtension {
     void apply(Object serviceExtension, Closure extraConfig) {
         applyPlugins()
 
-        setupJRubyShadowJar()
-        setupCompressedArchives(this.project, serviceExtension.scmHandler)
         disableJarTask()
+        setupJRubyJar()
+        setupCompressedArchives(this.project, serviceExtension.scmHandler)
 
         extraConfig.delegate = new JRubyDSL(this.project)
-        extraConfig.call(this)
+        extraConfig.call(this.project)
     }
 
     void applyPlugins(Project project) {
         this.project.apply plugin: 'com.github.jruby-gradle.base'
         this.project.apply plugin: 'com.github.jruby-gradle.jar'
-
-        /* The java (or groovy) plugin is a pre-requisite for the shadowjar plugin
-         * to properly initialize with a shadowJar{} task
-         */
         this.project.apply plugin: 'java'
-        this.project.apply plugin: 'com.github.johnrengelman.shadow'
     }
 
-    /**
-     * Set up the shadowJar task for packaging up a JRuby-based artifact
-     */
-    protected void setupJRubyShadowJar() {
-        removeDefaultShadowTask(this.project)
-
-        Task jar = this.project.task(JAR_TASK, type: ShadowJar) {
+    protected void setupJRubyJar() {
+        Task jar = this.project.task(JAR_TASK, type: JRubyJar) {
             group ServiceArtifactPlugin.GROUP_NAME
             description "Build a JRuby-based service jar"
 
@@ -107,27 +97,14 @@ class JRuby extends AbstractServiceExtension {
 
             dependsOn this.project.tasks.findByName('assemble')
 
-            /* This is necessary when using projects that use things like
-            Jackson's polymorphic deserialization support such as
-            DropWizard configured via META-INF/services entries that
-            need merging. There's almost no reason not to do this all the time. */
-            mergeServiceFiles()
-
             jruby {
                 defaultMainClass()
                 defaultGems()
+                /* We will default to a runnable() jar unless somebody tells
+                 * us otherwise
+                 */
+                initScript runnable()
             }
         }
-
-        /* Add the configuration which includes the proper JRuby-related dependencies
-         * from the jruby-gradle-jar-plugin
-         */
-        jar.configurations.add(this.project.configurations.getByName('jrubyJar'))
     }
-
-    protected void removeDefaultShadowTask(Project project) {
-        ShadowJar shadow = project.tasks.findByName('shadowJar')
-        project.tasks.remove(shadow)
-    }
-
 }
