@@ -1,13 +1,17 @@
 buildscript {
     repositories {
         jcenter()
+
         maven {
           url "https://plugins.gradle.org/m2/"
         }
     }
 
     dependencies {
-        classpath 'gradle.plugin.com.github.lookout:service-artifact-plugin:0.1.10'
+        classpath 'gradle.plugins.com.github.lookout:service-artifact-plugin:0.2.0'
+        /* Needed for gradleTest
+        classpath 'com.github.lookout:service-artifact-plugin:%%VERSION%%'
+        */
     }
 }
 
@@ -20,11 +24,20 @@ group = 'com.github.lookout.service-artifact'
 
 service {
     jruby {
+        mainScript 'main.rb'
     }
 }
-
 
 dependencies {
     gems "rubygems:sinatra:1.4.6"
     gems "rubygems:puma:2.11.2"
+
+    rubyDebug 'rubygems:ruby-debug-ide:0.4.30+'
+    rubyDebug 'rubygems:ruby-debug-base:0.10.4+'
+}
+
+
+/* Only present for integration testing */
+task runGradleTest {
+    dependsOn assembleService
 }
