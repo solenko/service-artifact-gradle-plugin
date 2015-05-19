@@ -5,3 +5,9 @@ jdk:
 cache:
   directories:
     - $HOME/.gradle
+
+install:
+  - ./gradlew clean
+
+script:
+  - ./gradlew --info --full-stacktrace
