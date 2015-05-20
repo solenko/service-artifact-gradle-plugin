@@ -1,7 +1,6 @@
 buildscript {
     repositories {
         jcenter()
-        mavenLocal()
 
         maven {
           url "https://plugins.gradle.org/m2/"
@@ -9,11 +8,15 @@ buildscript {
     }
 
     dependencies {
+        // Uncomment to run this example stand-alone
         //classpath 'gradle.plugins.com.github.lookout:service-artifact-plugin:0.2.0'
-        // Needed for gradleTest
+
+
+        /***********************************************************************/
+        /* These settings are only needed for Gradle Integration Testing */
         classpath 'com.github.lookout:service-artifact-plugin:%%VERSION%%'
-        //classpath 'com.github.lookout:service-artifact-plugin:0.2.0'
-        //
+        classpath fileTree('../../repo')
+        /***********************************************************************/
     }
 }
 

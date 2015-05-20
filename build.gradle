@@ -30,6 +30,10 @@ targetCompatibility = '1.6'
 
 // Dependency management
 ////////////////////////
+configurations {
+    gradleTest.extendsFrom compile
+}
+
 repositories {
     jcenter()
 
