@@ -165,4 +165,4 @@ task publish(type: Exec) {
 //////////////////////
 
 
-defaultTasks 'check', 'assemble'
+defaultTasks 'check', 'assemble', 'gradleTest'
