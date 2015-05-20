@@ -9,6 +9,7 @@ buildscript {
     dependencies {
         classpath "com.jfrog.bintray.gradle:gradle-bintray-plugin:1.1"
         classpath "com.gradle.publish:plugin-publish-plugin:0.9.0"
+        classpath 'org.ysb33r.gradle:gradletest:0.5.3'
     }
 }
 
@@ -18,6 +19,7 @@ apply plugin: 'maven'
 apply plugin: 'idea'
 apply plugin: "com.jfrog.bintray"
 apply plugin: "com.gradle.plugin-publish"
+apply plugin: 'org.ysb33r.gradletest'
 
 version = '0.2.0'
 group = 'com.github.lookout'
@@ -48,7 +50,7 @@ dependencies {
 
     /* JRuby related plugins */
     compile "com.github.jruby-gradle:jruby-gradle-plugin:0.1.17+"
-    compile "com.github.jruby-gradle:jruby-gradle-jar-plugin:0.1.3+"
+    compile "com.github.jruby-gradle:jruby-gradle-jar-plugin:0.2.1+"
 
     /* Shadow jar plugin for building self-contained jar artifacts */
     compile "com.github.jengelman.gradle.plugins:shadow:1.2.1+"
@@ -76,6 +78,15 @@ test {
 /* Whenever we're building an artifact, we should run the tests */
 assemble.dependsOn check
 jar.dependsOn check
+
+gradleTest {
+    /*
+     * according to ysb33r there's not enough of a difference in APIs between
+     * version 2.0->2.2 and 2.2->2.4 to be worth testing
+     */
+    versions '2.0', '2.2', '2.4'
+    dependsOn jar
+}
 
 codenarc {
     sourceSets = [sourceSets.main]

@@ -80,8 +80,7 @@ class ServiceArtifactPluginSpec extends Specification {
 class ServiceArtifactPluginWithJRubySpec extends ServiceArtifactPluginSpec {
     boolean hasPlugins(Project project) {
         return (project.plugins.findPlugin('com.github.jruby-gradle.base') &&
-                project.plugins.findPlugin('com.github.jruby-gradle.jar') &&
-                project.plugins.findPlugin('com.github.johnrengelman.shadow'))
+                project.plugins.findPlugin('com.github.jruby-gradle.jar'))
     }
 
     void enableJRuby() {
@@ -97,22 +96,14 @@ class ServiceArtifactPluginWithJRubySpec extends ServiceArtifactPluginSpec {
         hasPlugins(project)
     }
 
-    def "a shadowJar task should not be present"() {
-        given:
-        enableJRuby()
-        Task shadow = project.tasks.findByName('shadowJar')
-
-        expect:
-        shadow == null
-    }
 
     def "a serviceJar task should be present"() {
         given:
         enableJRuby()
-        Task shadow = project.tasks.findByName('serviceJar')
+        Task jar = project.tasks.findByName('serviceJar')
 
         expect:
-        shadow instanceof Task
+        jar instanceof Task
     }
 
     def "the default jar task should be disabled"() {

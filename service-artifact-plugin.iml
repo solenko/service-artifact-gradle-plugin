@@ -39,7 +39,6 @@
     <orderEntry type="library" scope="TEST" name="Gradle: junit:junit:4.12" level="project" />
     <orderEntry type="library" scope="TEST" name="Gradle: org.hamcrest:hamcrest-core:1.3" level="project" />
     <orderEntry type="library" exported="" name="Gradle: org.asciidoctor:asciidoctor-gradle-plugin:1.5.2" level="project" />
-    <orderEntry type="library" exported="" name="Gradle: com.github.jruby-gradle:jruby-gradle-jar-plugin:0.1.3" level="project" />
     <orderEntry type="library" exported="" name="Gradle: com.github.jengelman.gradle.plugins:shadow:1.2.1" level="project" />
     <orderEntry type="library" exported="" name="Gradle: org.jdom:jdom2:2.0.5" level="project" />
     <orderEntry type="library" exported="" name="Gradle: org.ow2.asm:asm:5.0.3" level="project" />
@@ -1334,5 +1333,6 @@
         </SOURCES>
       </library>
     </orderEntry>
+    <orderEntry type="library" exported="" name="Gradle: com.github.jruby-gradle:jruby-gradle-jar-plugin:0.2.1" level="project" />
   </component>
 </module>

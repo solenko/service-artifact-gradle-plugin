@@ -26,8 +26,7 @@ class JRubySpec extends Specification {
 class JRubyPluginsSpec extends JRubySpec {
     boolean hasPlugins(Project project) {
         return (project.plugins.findPlugin('com.github.jruby-gradle.base') &&
-                project.plugins.findPlugin('com.github.jruby-gradle.jar') &&
-                project.plugins.findPlugin('com.github.johnrengelman.shadow'))
+                project.plugins.findPlugin('com.github.jruby-gradle.jar'))
     }
 
     def "applyPlugins should install the necessary plugins"() {
