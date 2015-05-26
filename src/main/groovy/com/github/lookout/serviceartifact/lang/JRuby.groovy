@@ -48,14 +48,43 @@ class JRuby extends AbstractServiceExtension {
             }
         }
 
+        private Object jar() {
+            this.project.tasks.getByName(JAR_TASK)
+        }
+
         /**
          * Provide a custom start script for the executable jar artifact
          */
         void mainScript(String script) {
-            Task jar = this.project.tasks.getByName(JAR_TASK)
-            jar.jruby {
-                initScript script
-            }
+            jar().initScript(script)
+        }
+
+        /**
+         * Provide a custom main class for the executable jar artifact
+         */
+        void mainClass(String clazz) {
+            jar().mainClass(clazz)
+        }
+
+        /**
+         * Provide a default extracting main class for the executable jar artifact
+         */
+        void extractingMainClass() {
+            jar().extractingMainClass()
+        }
+
+        /**
+         * Use the given jruby version for the executable jar artifact
+         */
+        void jrubyVersion(String version) {
+            jar().jrubyVersion(version)
+        }
+
+        /**
+         * Use the given jruby-mains version when using one of the default main classes for the executable jar artifact
+         */
+        void jrubyMainsVersion(String version) {
+            jar().jrubyMainsVersion(version)
         }
     }
 
@@ -98,7 +127,6 @@ class JRuby extends AbstractServiceExtension {
             dependsOn this.project.tasks.findByName('assemble')
 
             jruby {
-                defaultMainClass()
                 defaultGems()
                 /* We will default to a runnable() jar unless somebody tells
                  * us otherwise

@@ -99,9 +99,16 @@ class ServiceArtifactExtensionShadowSpec extends Specification {
 
     def "the serviceJar has a manifest"() {
         given:
-        def task = project.tasks.findByName('serviceJar')
+        project = ProjectBuilder.builder().withName('manifest').build()
 
-        expect:
+      when:
+        this.project.apply plugin: 'com.github.lookout.service-artifact'
+        this.project.service { jruby { } }
+        def task = project.tasks.findByName('serviceJar')
+        // the beforeExecute is not triggered with this test, so do it manually
+        task.applyConfig()
+
+        then:
         task.manifest.attributes['Main-Class']
 
     }
