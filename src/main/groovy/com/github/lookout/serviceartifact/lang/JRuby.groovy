@@ -42,7 +42,7 @@ class JRuby extends AbstractServiceExtension {
                         serviceJar.from(this.project.projectDir) { include "${path}/**" }
                     }
                     else {
-                        serviceJar.from path
+                        serviceJar.from(this.project.projectDir) { include path }
                     }
                 }
             }
