@@ -21,11 +21,9 @@ apply plugin: "com.jfrog.bintray"
 apply plugin: "com.gradle.plugin-publish"
 apply plugin: 'org.ysb33r.gradletest'
 
-version = '0.3.2'
+version = '0.3.3'
 group = 'com.github.lookout'
 description = 'Gradle plugin for building a prim and proper Lookout service artifact'
-sourceCompatibility = '1.6'
-targetCompatibility = '1.6'
 
 
 // Dependency management
@@ -53,10 +51,11 @@ dependencies {
     compile "org.asciidoctor:asciidoctor-gradle-plugin:1.5.2"
 
     /* JRuby related plugins */
-    compile "com.github.jruby-gradle:jruby-gradle-plugin:0.1.17+"
-    compile "com.github.jruby-gradle:jruby-gradle-jar-plugin:0.2.1+"
+    ['jruby-gradle-plugin', 'jruby-gradle-jar-plugin'].each {
+        compile "com.github.jruby-gradle:${it}:0.3.0+"
+    }
 
-    /* Shadow jar plugin for building self-contained jar artifacts */
+    /* Shadow jar plugin for building self-contained (Scala) jar artifacts */
     compile "com.github.jengelman.gradle.plugins:shadow:1.2.1+"
 
 
