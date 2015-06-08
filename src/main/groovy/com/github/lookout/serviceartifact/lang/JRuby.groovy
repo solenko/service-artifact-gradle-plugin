@@ -95,8 +95,6 @@ class JRuby extends AbstractServiceExtension {
                     'META-INF/INDEX.LIST', 'META-INF/*.SF',
                     'META-INF/*.DSA', 'META-INF/*.RSA'
 
-            dependsOn this.project.tasks.findByName('assemble')
-
             jruby {
                 defaultMainClass()
                 defaultGems()
@@ -106,5 +104,7 @@ class JRuby extends AbstractServiceExtension {
                 initScript runnable()
             }
         }
+
+        this.project.tasks.findByName('assemble').dependsOn jar
     }
 }
