@@ -54,4 +54,17 @@ class GitHandlerSpec extends Specification {
         then:
         version == '1.0+0xdeadbeef'
     }
+
+    def "annotateVersion() when a Jenkins BUILD_NUMBER is available should include it"() {
+        given:
+        def handler = Spy(GitHandler, constructorArgs: [[:]])
+        _ * handler.getProperty('environment') >> ['BUILD_NUMBER' : '1']
+        1 * handler.findGitRoot(_) >> null
+
+        when:
+        String version = handler.annotatedVersion('1.0')
+
+        then:
+        version == '1.0.1'
+    }
 }

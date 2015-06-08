@@ -28,6 +28,11 @@ class GitHandler extends AbstractScmHandler {
     }
 
     String annotatedVersion(String baseVersion) {
+        if (this.environment['BUILD_NUMBER']) {
+            baseVersion = String.format("%s.%s",
+                                        baseVersion,
+                                        this.environment['BUILD_NUMBER'])
+        }
         if (this.git == null) {
             return baseVersion
         }

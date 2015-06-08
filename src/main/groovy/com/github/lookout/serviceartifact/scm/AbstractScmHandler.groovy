@@ -27,4 +27,8 @@ abstract class AbstractScmHandler {
     static AbstractScmHandler build(Map<String, String> env) {
         throw new NoSuchMethodException("A subclass of AbstractScmHandler has not implemented build()!")
     }
+
+    Map<String, String> getEnvironment() {
+        return System.getenv()
+    }
 }
