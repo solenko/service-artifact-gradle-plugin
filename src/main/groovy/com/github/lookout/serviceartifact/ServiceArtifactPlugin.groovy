@@ -38,19 +38,25 @@ class ServiceArtifactPlugin implements Plugin<Project> {
         Task tarTask = project.task('serviceTar', type: Tar) {
             group GROUP_NAME
             description "Create a .tar.gz artifact containing the service"
-            dependsOn project.tasks.prepareServiceScripts
+            dependsOn prepareTask
         }
 
         Task zipTask = project.task('serviceZip', type: Zip) {
             group GROUP_NAME
             description "Create a .zip artifact containing the service"
-            dependsOn project.tasks.prepareServiceScripts
+            dependsOn prepareTask
         }
 
         Task assembleTask = project.task('assembleService') {
             group GROUP_NAME
             description "Assemble all the service artifacts"
-            dependsOn project.tasks.serviceZip, project.tasks.serviceTar
+            dependsOn zipTask, tarTask
+        }
+
+        Task publishTask = project.task('publish') {
+            group GROUP_NAME
+            description "Publish all our artifacts (uploadServiceArchives and uploadArchives)"
+            dependsOn project.tasks.uploadArchives, project.tasks.uploadServiceArchives
         }
 
         project.artifacts.add(ARCHIVES_CONFIG, zipTask)

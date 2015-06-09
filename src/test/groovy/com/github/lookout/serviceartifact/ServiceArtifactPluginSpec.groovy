@@ -38,14 +38,13 @@ class ServiceArtifactPluginSpec extends Specification {
         project.service instanceof ServiceArtifactExtension
     }
 
-
     def "project should include the serviceTar task"() {
         given:
         Task t = project.tasks.findByName('serviceTar')
 
         expect:
         t instanceof Tar
-        t.group == 'Service Artifact'
+        t.group == ServiceArtifactPlugin.GROUP_NAME
     }
 
     def "project should include the serviceZip task"() {
@@ -54,7 +53,7 @@ class ServiceArtifactPluginSpec extends Specification {
 
         expect:
         t instanceof Zip
-        t.group == 'Service Artifact'
+        t.group == ServiceArtifactPlugin.GROUP_NAME
     }
 
     def "project should include a prepareServiceScripts task"() {
@@ -63,7 +62,7 @@ class ServiceArtifactPluginSpec extends Specification {
 
         expect:
         t instanceof Task
-        t.group == 'Service Artifact'
+        t.group == ServiceArtifactPlugin.GROUP_NAME
     }
 
     def "project should include a assembleService task"() {
@@ -72,7 +71,29 @@ class ServiceArtifactPluginSpec extends Specification {
 
         expect:
         t instanceof Task
-        t.group == 'Service Artifact'
+        t.group == ServiceArtifactPlugin.GROUP_NAME
+    }
+
+    @Issue('https://github.com/lookout/service-artifact-gradle-plugin/issues/22')
+    def "project should have a publish task"() {
+        given:
+        Task t = project.tasks.findByName('publish')
+
+        expect:
+        t instanceof Task
+        t.group == ServiceArtifactPlugin.GROUP_NAME
+        t.dependsOn.contains(project.tasks.findByName('uploadArchives'))
+        t.dependsOn.contains(project.tasks.findByName('uploadServiceArchives'))
+    }
+
+    @Ignore
+    @Issue('https://github.com/lookout/service-artifact-gradle-plugin/issues/24')
+    def "assembleService should have outputs"() {
+        given:
+        Task t = project.tasks.findByName('assembleService')
+
+        expect:
+        !t.outputs.files.isEmpty()
     }
 
     def "project should include a serviceArchives configuration"() {
