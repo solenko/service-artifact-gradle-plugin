@@ -29,9 +29,10 @@ class ServiceArtifactPluginSpec extends Specification {
     }
 
     @Issue('https://github.com/lookout/service-artifact-gradle-plugin/issues/18')
+    @Ignore('Waiting for this issue to be resolved: https://github.com/nebula-plugins/gradle-dependency-lock-plugin/issues/56')
     def "project should have the dependency-lock plugin"() {
         expect:
-        project.plugins.findPlugin('nebula.gradle-dependency-lock')
+        project.plugins.findPlugin('nebula.dependency-lock')
     }
 
     def "project should NOT have the jruby-gradle base plugin by default"() {
