@@ -40,6 +40,7 @@ class Scala extends AbstractServiceExtension {
 
             from(this.project.sourceSets.main.output)
         }
+        this.project.artifacts.add(ServiceArtifactPlugin.ARCHIVES_CONFIG, jar)
         jar.configurations.add(this.project.configurations.getByName('compile'))
         setupCompressedArchives(this.project, serviceExtension.scmHandler)
         disableJarTask()

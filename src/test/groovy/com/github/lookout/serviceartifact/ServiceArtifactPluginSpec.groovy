@@ -182,4 +182,13 @@ class ServiceArtifactPluginWithScalaSpec extends ServiceArtifactPluginSpec {
         expect:
         project.tasks.findByName('jar').enabled == false
     }
+
+    def "artifacts{} should include the jar archive"() {
+        given:
+        enableScala()
+        def c = project.configurations.findByName('serviceArchives')
+
+        expect:
+        c.artifacts.find { it.archiveTask.is project.tasks.findByName('serviceJar')}
+    }
 }
