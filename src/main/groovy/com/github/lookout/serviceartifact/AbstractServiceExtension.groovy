@@ -21,7 +21,7 @@ abstract class AbstractServiceExtension {
      * @return
      */
     protected void setupCompressedArchives(Project project, AbstractScmHandler scmHandler) {
-        Task tar = project.tasks.findByName('serviceTarGz')
+        Task tar = project.tasks.findByName('serviceTar')
         Task zip = project.tasks.findByName('serviceZip')
         Task jar = project.tasks.findByName('serviceJar')
 

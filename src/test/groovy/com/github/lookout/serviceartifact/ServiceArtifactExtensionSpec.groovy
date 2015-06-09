@@ -119,9 +119,9 @@ class ServiceArtifactExtensionArchivesSpec extends Specification {
         this.project.service { jruby {} }
     }
 
-    def "the serviceTarGz task should depend on serviceJar"() {
+    def "the serviceTar task should depend on serviceJar"() {
         given:
-        Task tar = project.tasks.findByName('serviceTarGz')
+        Task tar = project.tasks.findByName('serviceTar')
 
         expect:
         tar.dependsOn.find { (it instanceof Task) && (it.name == 'serviceJar') }

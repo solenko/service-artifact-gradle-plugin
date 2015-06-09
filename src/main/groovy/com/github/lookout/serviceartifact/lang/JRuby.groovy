@@ -104,7 +104,8 @@ class JRuby extends AbstractServiceExtension {
                 initScript runnable()
             }
         }
-
+        /* Ensure our artifact is added to the proper configuration */
+        this.project.artifacts.add(ServiceArtifactPlugin.ARCHIVES_CONFIG, jar)
         this.project.tasks.findByName('assemble').dependsOn jar
     }
 }
