@@ -34,12 +34,12 @@ class Scala extends AbstractServiceExtension {
 
         Task jar = this.project.task('serviceJar', type: ShadowJar) {
             manifest { attributes 'Main-Class' : this.mainClass }
-            dependsOn this.project.tasks.findByName('assemble')
             group ServiceArtifactPlugin.GROUP_NAME
             description "Build a Scala-based service jar"
 
             from(this.project.sourceSets.main.output)
         }
+        this.project.tasks.findByName('assemble').dependsOn(jar)
         this.project.artifacts.add(ServiceArtifactPlugin.ARCHIVES_CONFIG, jar)
         jar.configurations.add(this.project.configurations.getByName('compile'))
         setupCompressedArchives(this.project, serviceExtension.scmHandler)
