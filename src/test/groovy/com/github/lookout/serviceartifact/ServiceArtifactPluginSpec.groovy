@@ -28,6 +28,12 @@ class ServiceArtifactPluginSpec extends Specification {
         project.plugins.findPlugin('org.asciidoctor.gradle.asciidoctor')
     }
 
+    @Issue('https://github.com/lookout/service-artifact-gradle-plugin/issues/18')
+    def "project should have the dependency-lock plugin"() {
+        expect:
+        project.plugins.findPlugin('nebula.gradle-dependency-lock')
+    }
+
     def "project should NOT have the jruby-gradle base plugin by default"() {
         expect:
         !project.plugins.findPlugin('com.github.jruby-gradle.base')

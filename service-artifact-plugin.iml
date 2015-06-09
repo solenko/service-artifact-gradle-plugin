@@ -1334,5 +1334,7 @@
     </orderEntry>
     <orderEntry type="library" exported="" name="Gradle: com.github.jruby-gradle:jruby-gradle-plugin:0.3.0" level="project" />
     <orderEntry type="library" exported="" name="Gradle: com.github.jruby-gradle:jruby-gradle-jar-plugin:0.3.0" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: com.netflix.nebula:gradle-dependency-lock-plugin:2.2.3" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: com.netflix.nebula:gradle-scm-plugin:2.2.0" level="project" />
   </component>
 </module>

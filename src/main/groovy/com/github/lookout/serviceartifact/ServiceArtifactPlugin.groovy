@@ -14,6 +14,8 @@ class ServiceArtifactPlugin implements Plugin<Project> {
     void apply(Project project) {
         /* Add the asciidoctor plugin because...docs are important */
         project.apply plugin: 'org.asciidoctor.gradle.asciidoctor'
+        /* Add the dependency-lcok plugin by default because that's important! */
+        project.apply plugin: 'nebula.gradle-dependency-lock'
 
         Object service = project.extensions.create('service',
                                                             ServiceArtifactExtension,

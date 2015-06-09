@@ -50,6 +50,9 @@ dependencies {
     /* asciidoctor gradle plugin */
     compile "org.asciidoctor:asciidoctor-gradle-plugin:1.5.2"
 
+    /* dependency lock plugin */
+    compile "com.netflix.nebula:gradle-dependency-lock-plugin:2.2.3+"
+
     /* JRuby related plugins */
     ['jruby-gradle-plugin', 'jruby-gradle-jar-plugin'].each {
         compile "com.github.jruby-gradle:${it}:0.3.0+"
@@ -57,7 +60,6 @@ dependencies {
 
     /* Shadow jar plugin for building self-contained (Scala) jar artifacts */
     compile "com.github.jengelman.gradle.plugins:shadow:1.2.1+"
-
 
     testCompile('org.spockframework:spock-core:1.0-groovy-2.3') {
         exclude module: 'groovy-all'
