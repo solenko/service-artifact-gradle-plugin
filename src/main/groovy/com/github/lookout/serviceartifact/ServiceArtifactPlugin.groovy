@@ -2,11 +2,14 @@ package com.github.lookout.serviceartifact
 
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.Task
+import org.gradle.api.artifacts.Configuration
 import org.gradle.api.tasks.bundling.Zip
 import org.gradle.api.tasks.bundling.Tar
 
 class ServiceArtifactPlugin implements Plugin<Project> {
     static final String GROUP_NAME = 'Service Artifact'
+    static final String ARCHIVES_CONFIG = "serviceArchives"
 
     void apply(Project project) {
         /* Add the asciidoctor plugin because...docs are important */
@@ -25,27 +28,32 @@ class ServiceArtifactPlugin implements Plugin<Project> {
             new lang.Scala(project).apply(delegate, extraConfig)
         }
 
-        project.task('prepareServiceScripts') {
+        Configuration archive = project.configurations.create(ARCHIVES_CONFIG)
+
+        Task prepareTask = project.task('prepareServiceScripts') {
             group GROUP_NAME
             description "stub task for preparing the bin scripts for the artifact"
         }
 
-        project.task('serviceTarGz', type: Tar) {
+        Task tarTask = project.task('serviceTar', type: Tar) {
             group GROUP_NAME
             description "Create a .tar.gz artifact containing the service"
             dependsOn project.tasks.prepareServiceScripts
         }
 
-        project.task('serviceZip', type: Zip) {
+        Task zipTask = project.task('serviceZip', type: Zip) {
             group GROUP_NAME
             description "Create a .zip artifact containing the service"
             dependsOn project.tasks.prepareServiceScripts
         }
 
-        project.task('assembleService') {
+        Task assembleTask = project.task('assembleService') {
             group GROUP_NAME
             description "Assemble all the service artifacts"
-            dependsOn project.tasks.serviceZip, project.tasks.serviceTarGz
+            dependsOn project.tasks.serviceZip, project.tasks.serviceTar
         }
+
+        project.artifacts.add(ARCHIVES_CONFIG, zipTask)
+        project.artifacts.add(ARCHIVES_CONFIG, tarTask)
     }
 }

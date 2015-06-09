@@ -39,9 +39,9 @@ class ServiceArtifactPluginSpec extends Specification {
     }
 
 
-    def "project should include the serviceTarGz task"() {
+    def "project should include the serviceTar task"() {
         given:
-        Task t = project.tasks.findByName('serviceTarGz')
+        Task t = project.tasks.findByName('serviceTar')
 
         expect:
         t instanceof Tar
@@ -73,6 +73,20 @@ class ServiceArtifactPluginSpec extends Specification {
         expect:
         t instanceof Task
         t.group == 'Service Artifact'
+    }
+
+    def "project should include a serviceArchives configuration"() {
+        expect:
+        project.configurations.findByName('serviceArchives')
+    }
+
+    def "artifacts{} should include the tar and zip archives"() {
+        given:
+        def c = project.configurations.findByName('serviceArchives')
+
+        expect:
+        c.artifacts.find { it.archiveTask.is project.tasks.findByName('serviceZip')}
+        c.artifacts.find { it.archiveTask.is project.tasks.findByName('serviceTar')}
     }
 }
 
@@ -112,6 +126,15 @@ class ServiceArtifactPluginWithJRubySpec extends ServiceArtifactPluginSpec {
 
         expect:
         project.tasks.findByName('jar').enabled == false
+    }
+
+    def "artifacts{} should include the jar archive"() {
+        given:
+        enableJRuby()
+        def c = project.configurations.findByName('serviceArchives')
+
+        expect:
+        c.artifacts.find { it.archiveTask.is project.tasks.findByName('serviceJar')}
     }
 }
 
@@ -158,5 +181,14 @@ class ServiceArtifactPluginWithScalaSpec extends ServiceArtifactPluginSpec {
 
         expect:
         project.tasks.findByName('jar').enabled == false
+    }
+
+    def "artifacts{} should include the jar archive"() {
+        given:
+        enableScala()
+        def c = project.configurations.findByName('serviceArchives')
+
+        expect:
+        c.artifacts.find { it.archiveTask.is project.tasks.findByName('serviceJar')}
     }
 }
