@@ -55,7 +55,7 @@ class ServiceArtifactPlugin implements Plugin<Project> {
             dependsOn zipTask, tarTask
         }
 
-        Task publishTask = project.task('publish') {
+        Task publishTask = project.task('publishService') {
             group GROUP_NAME
             description "Publish all our artifacts (uploadServiceArchives and uploadArchives)"
             dependsOn project.tasks.uploadArchives, project.tasks.uploadServiceArchives

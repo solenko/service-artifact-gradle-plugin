@@ -82,9 +82,9 @@ class ServiceArtifactPluginSpec extends Specification {
     }
 
     @Issue('https://github.com/lookout/service-artifact-gradle-plugin/issues/22')
-    def "project should have a publish task"() {
+    def "project should have a publishService task"() {
         given:
-        Task t = project.tasks.findByName('publish')
+        Task t = project.tasks.findByName('publishService')
 
         expect:
         t instanceof Task
