@@ -68,7 +68,7 @@ class JRuby extends AbstractServiceExtension {
 
         disableJarTask()
         setupJRubyJar()
-        setupCompressedArchives(this.project, serviceExtension.scmHandler)
+        setupCompressedArchives(serviceExtension)
 
         extraConfig.delegate = new JRubyDSL(this.project)
         extraConfig.call(this.project)

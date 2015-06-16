@@ -6,6 +6,17 @@ import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.testfixtures.ProjectBuilder
 
+import com.github.lookout.serviceartifact.scm.GerritHandler
+
+abstract class AppliedExtensionSpec extends Specification {
+    protected Project project
+
+    def setup() {
+        this.project = ProjectBuilder.builder().build()
+        this.project.apply plugin: 'com.github.lookout.service-artifact'
+    }
+}
+
 class ServiceArtifactExtensionSpec extends Specification {
     protected Project project
 
@@ -30,22 +41,14 @@ class ServiceArtifactExtensionSpec extends Specification {
         expect:
         extension instanceof ServiceArtifactExtension
     }
-}
-
-
-class ServiceArtifactExtensionInstanceSpec extends ServiceArtifactExtensionSpec {
 
     def "getScmHandler() instantiate a handler instance"() {
         given: "we're inside of a Gerrit-triggered Jenkins job"
         def ext = new ServiceArtifactExtension(this.project, gerritEnv())
 
         expect:
-        ext.scmHandler instanceof scm.GerritHandler
+        ext.scmHandler instanceof GerritHandler
     }
-
-}
-
-class ServiceArtifactExtensionVersionSpec extends ServiceArtifactExtensionSpec {
 
     def "version() should return an unmolested string by default"() {
         given:
@@ -69,14 +72,95 @@ class ServiceArtifactExtensionVersionSpec extends ServiceArtifactExtensionSpec {
         then:
         version == '1.0.1.1+0xded'
     }
+
+    def "bootstrap() should define a serviceVersionInfo task"() {
+        given:
+        def extension = new ServiceArtifactExtension(this.project)
+
+        when:
+        extension.bootstrap()
+
+        then:
+        this.project.tasks.findByName('serviceVersionInfo')
+    }
+
+    @Ignore
+    def "bootstrap() should define serviceMetadata"() {
+        given:
+        def extension = new ServiceArtifactExtension(this.project)
+
+        when:
+        extension.bootstrap()
+
+        then:
+        this.project.tasks.findByName('serviceMetadata')
+    }
+
+
+    def "generateVersionMap()"() {
+        given:
+        def extension = new ServiceArtifactExtension(this.project)
+        Map versionMap = extension.generateVersionMap()
+
+        expect:
+        versionMap instanceof Map
+        versionMap['version']
+        versionMap['name']
+        versionMap['buildDate']
+        versionMap['revision']
+        versionMap['builtOn']
+    }
 }
 
-class ServiceArtifactExtensionShadowSpec extends Specification {
-    protected Project project
+class ExtensionIntegrationSpec extends AppliedExtensionSpec {
 
+    def "bootstrap() should have set up dependencies for serviceVersionInfo"() {
+        given:
+        Closure matcher = { (it instanceof Task) && (it.name == 'serviceVersionInfo') }
+        Task zip = this.project.tasks.findByName('serviceZip')
+        Task tar = this.project.tasks.findByName('serviceTar')
+
+        expect: "the compressed archives to rely on serviceVersionInfo"
+        zip.dependsOn.find(matcher)
+        tar.dependsOn.find(matcher)
+    }
+}
+
+
+/**
+ * Test the functionality of the service { metadata [:] } property
+ */
+class ServiceArtifactExtensionMetadataSpec extends AppliedExtensionSpec {
+    def "its metadata should be a map by default"() {
+        expect:
+        this.project.service.metadata instanceof Map
+    }
+
+    def "I should be able to set metadata"() {
+        given:
+        this.project.service.metadata 'success' : true
+
+        expect:
+        this.project.service.metadata == ['success' : true]
+    }
+
+    def "I should be able to completely overwrite it with setMetadata"() {
+        given:
+        this.project.service.metadata 'overwrite' : 1
+
+        when:
+        this.project.service.setMetadata 'success' : true
+
+        then:
+        this.project.service.metadata == ['success' : true]
+    }
+}
+
+/**
+ * Test the functionality of the service { jruby{} } closure
+ */
+class ServiceArtifactExtensionJRubyIntegrationSpec extends AppliedExtensionSpec {
     def setup() {
-        this.project = ProjectBuilder.builder().build()
-        this.project.apply plugin: 'com.github.lookout.service-artifact'
         this.project.service { jruby {} }
     }
 
@@ -105,19 +189,6 @@ class ServiceArtifactExtensionShadowSpec extends Specification {
         task.manifest.attributes['Main-Class']
 
     }
-}
-
-/**
- * Test the behaviors of the setupCompressedArchives() functionality
- */
-class ServiceArtifactExtensionArchivesSpec extends Specification {
-    protected Project project
-
-    def setup() {
-        this.project = ProjectBuilder.builder().build()
-        this.project.apply plugin: 'com.github.lookout.service-artifact'
-        this.project.service { jruby {} }
-    }
 
     def "the serviceTar task should depend on serviceJar"() {
         given:
@@ -135,4 +206,3 @@ class ServiceArtifactExtensionArchivesSpec extends Specification {
         tar.dependsOn.find { (it instanceof Task) && (it.name == 'serviceJar') }
     }
 }
-

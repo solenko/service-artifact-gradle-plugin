@@ -10,6 +10,8 @@ import org.gradle.api.tasks.bundling.Tar
 class ServiceArtifactPlugin implements Plugin<Project> {
     static final String GROUP_NAME = 'Service Artifact'
     static final String ARCHIVES_CONFIG = "serviceArchives"
+    static final String ZIP_TASK = 'serviceZip'
+    static final String TAR_TASK = 'serviceTar'
 
     void apply(Project project) {
         /* Add the asciidoctor plugin because...docs are important */
@@ -37,13 +39,13 @@ class ServiceArtifactPlugin implements Plugin<Project> {
             description "stub task for preparing the bin scripts for the artifact"
         }
 
-        Task tarTask = project.task('serviceTar', type: Tar) {
+        Task tarTask = project.task(TAR_TASK, type: Tar) {
             group GROUP_NAME
             description "Create a .tar.gz artifact containing the service"
             dependsOn prepareTask
         }
 
-        Task zipTask = project.task('serviceZip', type: Zip) {
+        Task zipTask = project.task(ZIP_TASK, type: Zip) {
             group GROUP_NAME
             description "Create a .zip artifact containing the service"
             dependsOn prepareTask
@@ -63,5 +65,8 @@ class ServiceArtifactPlugin implements Plugin<Project> {
 
         project.artifacts.add(ARCHIVES_CONFIG, zipTask)
         project.artifacts.add(ARCHIVES_CONFIG, tarTask)
+
+        /* With everything defined, let's bootstrap the service extension internals */
+        service.bootstrap()
     }
 }

@@ -35,7 +35,9 @@
           <root url="jar://$USER_HOME$/.gradle/wrapper/dists/gradle-2.0-all/evtta6k9rngqxp6sxbf6unsdw/gradle-2.0/lib/groovy-all-2.3.3.jar!/" />
         </CLASSES>
         <JAVADOC />
-        <SOURCES />
+        <SOURCES>
+          <root url="jar://$USER_HOME$/.ideaLibSources/groovy-all-2.3.3-sources.jar!/" />
+        </SOURCES>
       </library>
     </orderEntry>
     <orderEntry type="module-library" exported="">
