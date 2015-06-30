@@ -26,10 +26,17 @@ version = service.version('1.0')
 description = 'A sample JRuby service to built into an artifact'
 group = 'com.github.lookout.service-artifact'
 
-
 service {
-    jruby {
+    name 'example-service'
+    dependencies 'zookeeper', 'kafka'
+
+    component('api', type: service.JRuby) {
         mainScript 'main.rb'
+    }
+
+    data {
+        dependencies 'example-redis', 'example-h2'
+        migrations files('db/**/*.sql')
     }
 }
 

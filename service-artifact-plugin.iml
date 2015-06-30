@@ -1336,5 +1336,9 @@
     <orderEntry type="library" exported="" name="Gradle: com.github.jruby-gradle:jruby-gradle-jar-plugin:0.3.0" level="project" />
     <orderEntry type="library" exported="" name="Gradle: com.netflix.nebula:gradle-dependency-lock-plugin:2.2.3" level="project" />
     <orderEntry type="library" exported="" name="Gradle: com.netflix.nebula:gradle-scm-plugin:2.2.0" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.4.0" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: com.fasterxml.jackson.core:jackson-core:2.4.0" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: com.fasterxml.jackson.core:jackson-annotations:2.4.0" level="project" />
+    <orderEntry type="library" exported="" name="Gradle: com.fasterxml.jackson.core:jackson-databind:2.4.0" level="project" />
   </component>
 </module>

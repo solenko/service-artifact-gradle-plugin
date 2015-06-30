@@ -12,6 +12,8 @@ class ServiceArtifactPlugin implements Plugin<Project> {
     static final String ARCHIVES_CONFIG = "serviceArchives"
     static final String ZIP_TASK = 'serviceZip'
     static final String TAR_TASK = 'serviceTar'
+    static final String VERSION_TASK  = 'serviceVersionInfo'
+    static final String METADATA_TASK = 'serviceMetadata'
 
     void apply(Project project) {
         /* Add the asciidoctor plugin because...docs are important */
@@ -19,14 +21,11 @@ class ServiceArtifactPlugin implements Plugin<Project> {
         /* Add the dependency-lcok plugin by default because that's important! */
         //project.apply plugin: 'nebula.dependency-lock'
 
+
         Object service = project.extensions.create('service',
                                                             ServiceArtifactExtension,
                                                             project,
                                                             System.env)
-
-        ServiceArtifactExtension.metaClass.jruby = { Closure extraConfig ->
-            new lang.JRuby(project).apply(delegate, extraConfig)
-        }
 
         ServiceArtifactExtension.metaClass.scala = { Closure extraConfig ->
             new lang.Scala(project).apply(delegate, extraConfig)

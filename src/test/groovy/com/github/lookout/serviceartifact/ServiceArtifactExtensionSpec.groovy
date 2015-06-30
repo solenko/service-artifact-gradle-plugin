@@ -1,5 +1,6 @@
 package com.github.lookout.serviceartifact
 
+import org.gradle.api.tasks.StopExecutionException
 import spock.lang.*
 
 import org.gradle.api.Project
@@ -19,11 +20,12 @@ abstract class AppliedExtensionSpec extends Specification {
 
 class ServiceArtifactExtensionSpec extends Specification {
     protected Project project
+    protected ServiceArtifactExtension extension
 
     def setup() {
         this.project = ProjectBuilder.builder().build()
+        this.extension = new ServiceArtifactExtension(this.project)
     }
-
 
     /** Return a sample Gerrit environment for testing Gerrit specific
      * behaviors */
@@ -35,9 +37,6 @@ class ServiceArtifactExtensionSpec extends Specification {
     }
 
     def "should be construct-able"() {
-        given:
-        def extension = new ServiceArtifactExtension(this.project)
-
         expect:
         extension instanceof ServiceArtifactExtension
     }
@@ -74,9 +73,6 @@ class ServiceArtifactExtensionSpec extends Specification {
     }
 
     def "bootstrap() should define a serviceVersionInfo task"() {
-        given:
-        def extension = new ServiceArtifactExtension(this.project)
-
         when:
         extension.bootstrap()
 
@@ -84,11 +80,7 @@ class ServiceArtifactExtensionSpec extends Specification {
         this.project.tasks.findByName('serviceVersionInfo')
     }
 
-    @Ignore
     def "bootstrap() should define serviceMetadata"() {
-        given:
-        def extension = new ServiceArtifactExtension(this.project)
-
         when:
         extension.bootstrap()
 
@@ -96,10 +88,43 @@ class ServiceArtifactExtensionSpec extends Specification {
         this.project.tasks.findByName('serviceMetadata')
     }
 
+    def "name() should add service:name to serviceMetadata"() {
+        given:
+        String serviceName = 'sample-service'
+
+        when:
+        extension.name serviceName
+
+        then:
+        extension.name == serviceName
+    }
+
+    def "dependencies() should take a list of strings"() {
+        when:
+        extension.dependencies 'one', 'two'
+
+        then:
+        extension.dependencies == ['one', 'two']
+    }
+
+    def "validateMetadata() should raise an exception if properties are not set"() {
+        when:
+        extension.validateMetadata()
+
+        then:
+        thrown(StopExecutionException)
+    }
+
+    def "validateMetadata() should not raise if name has been provided"() {
+        given:
+        extension.name 'some-name'
+
+        expect:
+        extension.validateMetadata()
+    }
 
     def "generateVersionMap()"() {
         given:
-        def extension = new ServiceArtifactExtension(this.project)
         Map versionMap = extension.generateVersionMap()
 
         expect:
@@ -110,13 +135,32 @@ class ServiceArtifactExtensionSpec extends Specification {
         versionMap['revision']
         versionMap['builtOn']
     }
+
+    def "component() DSL method must be given a 'type:' keyword-argument"() {
+        when:
+        extension.component('api', type: null) { }
+
+        then:
+        thrown(StopExecutionException)
+    }
 }
 
+@Title("Verify complex behaviors manifested by the ServiceArtifactExtension")
 class ExtensionIntegrationSpec extends AppliedExtensionSpec {
-
     def "bootstrap() should have set up dependencies for serviceVersionInfo"() {
         given:
         Closure matcher = { (it instanceof Task) && (it.name == 'serviceVersionInfo') }
+        Task zip = this.project.tasks.findByName('serviceZip')
+        Task tar = this.project.tasks.findByName('serviceTar')
+
+        expect: "the compressed archives to rely on serviceVersionInfo"
+        zip.dependsOn.find(matcher)
+        tar.dependsOn.find(matcher)
+    }
+
+    def "bootstrap() should have set up dependencies for serviceMetadata"() {
+        given:
+        Closure matcher = { (it instanceof Task) && (it.name == 'serviceMetadata') }
         Task zip = this.project.tasks.findByName('serviceZip')
         Task tar = this.project.tasks.findByName('serviceTar')
 
@@ -128,47 +172,25 @@ class ExtensionIntegrationSpec extends AppliedExtensionSpec {
 
 
 /**
- * Test the functionality of the service { metadata [:] } property
- */
-class ServiceArtifactExtensionMetadataSpec extends AppliedExtensionSpec {
-    def "its metadata should be a map by default"() {
-        expect:
-        this.project.service.metadata instanceof Map
-    }
-
-    def "I should be able to set metadata"() {
-        given:
-        this.project.service.metadata 'success' : true
-
-        expect:
-        this.project.service.metadata == ['success' : true]
-    }
-
-    def "I should be able to completely overwrite it with setMetadata"() {
-        given:
-        this.project.service.metadata 'overwrite' : 1
-
-        when:
-        this.project.service.setMetadata 'success' : true
-
-        then:
-        this.project.service.metadata == ['success' : true]
-    }
-}
-
-/**
  * Test the functionality of the service { jruby{} } closure
  */
+@Title("Verify ServiceArtifactExtension handles JRuby components properly")
 class ServiceArtifactExtensionJRubyIntegrationSpec extends AppliedExtensionSpec {
+    protected String componentName = 'api'
+
     def setup() {
-        this.project.service { jruby {} }
+        this.project.service {
+            component(componentName, type: JRuby) {
+            }
+        }
     }
 
-    def "the serviceJar task must be present"() {
-        expect:
-        project.tasks.findByName('serviceJar')
+    def "an archiveTask should be present"() {
+        expect: "a task named 'assembleApi' exists since our component is named 'api'"
+        project.tasks.findByName('assembleApi')
     }
 
+    @Ignore
     def "the serviceJar baseName should be the same as the project name"() {
         given:
         project = ProjectBuilder.builder().withName('spock-shadow').build()
@@ -181,28 +203,29 @@ class ServiceArtifactExtensionJRubyIntegrationSpec extends AppliedExtensionSpec 
         project.tasks.findByName('serviceJar').baseName == project.name
     }
 
-    def "the serviceJar has a manifest"() {
+    def "the service artifact has a manifest"() {
         given:
-        def task = project.tasks.findByName('serviceJar')
+        Task task = project.tasks.findByName('assembleApi')
 
         expect:
         task.manifest.attributes['Main-Class']
-
     }
 
-    def "the serviceTar task should depend on serviceJar"() {
+    def "the serviceTar task should depend on the service artifact task"() {
         given:
         Task tar = project.tasks.findByName('serviceTar')
+        String artifactTaskName = 'assembleApi'
 
         expect:
-        tar.dependsOn.find { (it instanceof Task) && (it.name == 'serviceJar') }
+        tar.dependsOn.find { (it instanceof Task) && (it.name == artifactTaskName) }
     }
 
-    def "the serviceZip task should depend on serviceJar"() {
+    def "the serviceZip task should depend on the service artifact task"() {
         given:
         Task tar = project.tasks.findByName('serviceZip')
+        String artifactTaskName = 'assembleApi'
 
         expect:
-        tar.dependsOn.find { (it instanceof Task) && (it.name == 'serviceJar') }
+        tar.dependsOn.find { (it instanceof Task) && (it.name == artifactTaskName) }
     }
 }

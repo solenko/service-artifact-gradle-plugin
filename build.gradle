@@ -61,6 +61,14 @@ dependencies {
     /* Shadow jar plugin for building self-contained (Scala) jar artifacts */
     compile "com.github.jengelman.gradle.plugins:shadow:1.2.1+"
 
+
+    /* Required for generating the YAML-based etc/metadata.conf for a service
+     * artifact
+     */
+    compile 'com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.4.0+'
+    compile 'com.fasterxml.jackson.core:jackson-annotations:2.4.0+'
+    compile 'com.fasterxml.jackson.core:jackson-databind:2.4.0+'
+
     testCompile('org.spockframework:spock-core:1.0-groovy-2.3') {
         exclude module: 'groovy-all'
     }
@@ -72,6 +80,7 @@ dependencies {
 // Tasks
 ////////
 test {
+    maxParallelForks 2
     testLogging {
         /* we want more test failure information, see:
          *  <http://mrhaki.blogspot.com/2013/05/gradle-goodness-show-more-information.html>

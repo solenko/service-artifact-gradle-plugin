@@ -8,7 +8,7 @@ import org.gradle.api.Task
  * DSL
  *
  */
-abstract class AbstractServiceExtension {
+abstract class AbstractArtifactExtension {
     abstract void apply(Object delegate, Closure configClosure)
 
     /**

@@ -1,8 +1,10 @@
 package com.github.lookout.serviceartifact
 
+import com.github.lookout.serviceartifact.component.JRubyComponent
 import groovy.json.JsonBuilder
 import org.gradle.api.Project
 import org.gradle.api.Task
+import org.gradle.api.tasks.StopExecutionException
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -14,6 +16,9 @@ import com.github.lookout.serviceartifact.scm.AbstractScmHandler
  */
 class ServiceArtifactExtension {
     protected final Project project
+
+    static final Class<AbstractComponent> JRuby = JRubyComponent
+
     protected final Map<String, String> env
     protected Logger logger = LoggerFactory.getLogger(ServiceArtifactExtension.class)
     /** List of scm handler classes, in priority order */
@@ -25,7 +30,12 @@ class ServiceArtifactExtension {
     protected AbstractScmHandler _scmHandler
 
     /** Map of metadata that should be written into the artifact's etc/metadata.conf */
-    protected Map<String, Object> metadata = [:]
+    protected Metadata metadata
+
+    /** Name of the service of which our artifact is a part */
+    protected String serviceName = null
+    /** List of services that this service depends on */
+    protected List<String> serviceDependencies = []
 
     ServiceArtifactExtension(final Project project) {
         this(project, [:])
@@ -35,6 +45,8 @@ class ServiceArtifactExtension {
                             final Map<String, String> env) {
         this.project = project
         this.env = env
+
+        this.metadata = new Metadata(project.name, project.name, project.version)
     }
 
     /**
@@ -42,8 +54,9 @@ class ServiceArtifactExtension {
      */
     void bootstrap() {
         String versionFilePath = String.format("%s/VERSION", this.project.buildDir)
+        String metadataFilePath = String.format("%s/etc/metadata.conf", this.project.buildDir)
 
-        Task version = project.tasks.create('serviceVersionInfo') {
+        Task version = project.tasks.create(ServiceArtifactPlugin.VERSION_TASK) {
             group ServiceArtifactPlugin.GROUP_NAME
             description "Generate the service artifact version information"
 
@@ -56,11 +69,19 @@ class ServiceArtifactExtension {
             }
         }
 
+        Task metadata = project.tasks.create(ServiceArtifactPlugin.METADATA_TASK) {
+            group ServiceArtifactPlugin.GROUP_NAME
+            description "Generate the service artifact etc/metadata.conf"
+
+            outputs.file(metadataFilePath).upToDateWhen { false }
+        }
+
         [ServiceArtifactPlugin.TAR_TASK, ServiceArtifactPlugin.ZIP_TASK].each {
             Task archiveTask = this.project.tasks.findByName(it)
 
             if (archiveTask instanceof Task) {
                 archiveTask.dependsOn(version)
+                archiveTask.dependsOn(metadata)
                 /* Pack the VERSION file containing some built metadata about
                  * this artifact to help trace it back to builds in the future
                  */
@@ -156,10 +177,54 @@ class ServiceArtifactExtension {
     }
 
     /**
+     * Validate the existing metadata to ensure non-optional fields are set
+     * before we attempt to do anything with the metadata
+     *
+     * @return true if the metadata is valid
+     * @throws org.gradle.api.tasks.StopExecutionException
+     */
+    boolean validateMetadata() {
+        if (this.serviceName) {
+            return true
+        }
+        throw new StopExecutionException("Missing required metadata fields")
+    }
+
+    void name(String name) {
+        this.serviceName = name
+    }
+
+    String getName() {
+        return this.serviceName
+    }
+
+    void dependencies(Object... arguments) {
+        this.serviceDependencies = arguments as List<String>
+    }
+
+    List<String> getDependencies() {
+        return this.serviceDependencies
+    }
+
+    /**
      * return the configured project for this service{} extension
      */
     Project getProject() {
         return this.project
+    }
+
+    /**
+     */
+    AbstractComponent component(Map keywordArguments, String name, Closure configurationSpec) {
+        if (!(keywordArguments.type instanceof Class<AbstractComponent>)) {
+            throw new StopExecutionException("component() must be called with a type: parameter")
+        }
+
+        AbstractComponent instance = keywordArguments.type.newInstance()
+        instance.apply(this.project, name)
+        instance.chainCompressedArchives('serviceTar', 'serviceZip')
+
+        return instance
     }
 }
 
