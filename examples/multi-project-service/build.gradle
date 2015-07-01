@@ -32,10 +32,10 @@ service {
 
     /* components are defined in their sub-projects */
 
-    data {
-        dependencies 'example-redis', 'example-h2'
-        migrations files('db/**/*.sql')
-    }
+    //data {
+    //    dependencies 'example-redis', 'example-h2'
+    //    migrations files('db/**/*.sql')
+    //}
 }
 
 

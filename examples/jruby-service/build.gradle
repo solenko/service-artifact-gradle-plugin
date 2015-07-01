@@ -30,14 +30,15 @@ service {
     name 'example-service'
     dependencies 'zookeeper', 'kafka'
 
-    component('api', type: service.JRuby) {
+    component('api', type: JRuby) {
         mainScript 'main.rb'
     }
 
-    data {
-        dependencies 'example-redis', 'example-h2'
-        migrations files('db/**/*.sql')
-    }
+    // TODO: implement the data DSL
+    //data {
+    //    dependencies 'example-redis', 'example-h2'
+    //    migrations files('db/**/*.sql')
+    //}
 }
 
 dependencies {
