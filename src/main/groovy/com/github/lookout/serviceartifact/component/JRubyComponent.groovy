@@ -23,6 +23,8 @@ import org.gradle.api.tasks.Optional
  *      }
  */
 class JRubyComponent extends AbstractComponent {
+    String mainScript = null
+
     @Override
     void apply(Project project, String name) {
         super.apply(project, name)
@@ -32,6 +34,7 @@ class JRubyComponent extends AbstractComponent {
         project.apply plugin: 'java'
 
         artifactTask = createJRubyJarTask(project, computeArtifactTaskName(name))
+        logger.info("CREATED JAR TASK")
 
         /* Let's make sure assemble exists in some form so we can chain off it */
         project.tasks.maybeCreate('assemble').dependsOn(artifactTask)
@@ -46,6 +49,8 @@ class JRubyComponent extends AbstractComponent {
      */
     @Optional
     void mainScript(String mainRbScript) {
+        logger.info("Using ${mainRbScript} as the entry point for the JRuby artifact")
+        this.mainScript = mainRbScript
         artifactTask.jruby {
             initScript mainRbScript
         }
@@ -77,28 +82,34 @@ class JRubyComponent extends AbstractComponent {
     }
 
     protected Task createJRubyJarTask(Project project, String taskName) {
-        return project.task(taskName, type: JRubyJar) {
+        Task jar = project.task(taskName, type: JRubyJar) {
             group ServiceArtifactPlugin.GROUP_NAME
             description "Build a JRuby-based service jar"
 
             /* Include our Ruby code into the tree */
-            from("${this.project.projectDir}/src/main/ruby")
+            from("${project.projectDir}/src/main/ruby")
             /* Include our main source sets output, including the JarBootstrap code */
-            from(this.project.sourceSets.main.output)
+            from(project.sourceSets.main.output)
 
             /* Exclude some basic stupid files from making their way in */
             exclude '*.swp', '*.gitkeep', '*.md',
                     'META-INF/INDEX.LIST', 'META-INF/*.SF',
                     'META-INF/*.DSA', 'META-INF/*.RSA'
+        }
 
-            jruby {
+        project.afterEvaluate {
+            String mainScript = this.mainScript
+
+            jar.jruby {
                 defaultMainClass()
                 defaultGems()
                 /* We will default to a runnable() jar unless somebody tells
                  * us otherwise
                  */
-                initScript runnable()
+                initScript mainScript ?: runnable()
             }
         }
+
+        return jar
     }
 }

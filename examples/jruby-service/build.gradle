@@ -5,6 +5,8 @@ buildscript {
         maven {
           url "https://plugins.gradle.org/m2/"
         }
+
+        mavenLocal()
     }
 
     dependencies {
@@ -14,8 +16,8 @@ buildscript {
 
         /***********************************************************************/
         /* These settings are only needed for Gradle Integration Testing */
-        classpath 'com.github.lookout:service-artifact-plugin:%%VERSION%%'
-        classpath fileTree('../../repo')
+        classpath 'com.github.lookout:service-artifact-plugin:0.4.0'
+        //classpath fileTree('../../repo')
         /***********************************************************************/
     }
 }
@@ -31,7 +33,7 @@ service {
     dependencies 'zookeeper', 'kafka'
 
     component('api', type: JRuby) {
-        mainScript 'main.rb'
+        mainScript "${projectDir}/src/main/ruby/main.rb"
     }
 
     // TODO: implement the data DSL

@@ -207,7 +207,10 @@ class ServiceArtifactExtensionJRubyIntegrationSpec extends AppliedExtensionSpec 
         given:
         Task task = project.tasks.findByName('assembleApi')
 
-        expect:
+        when:
+        project.evaluate()
+
+        then:
         task.manifest.attributes['Main-Class']
     }
 
