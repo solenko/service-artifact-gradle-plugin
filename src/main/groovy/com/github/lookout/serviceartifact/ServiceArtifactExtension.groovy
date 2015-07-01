@@ -224,6 +224,9 @@ class ServiceArtifactExtension {
         instance.apply(this.project, name)
         instance.chainCompressedArchives('serviceTar', 'serviceZip')
 
+        configurationSpec.delegate = instance
+        configurationSpec.call(instance)
+
         return instance
     }
 }
