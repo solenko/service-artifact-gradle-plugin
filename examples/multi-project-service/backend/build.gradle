@@ -1,0 +1,45 @@
+buildscript {
+    repositories {
+        maven {
+          url "https://plugins.gradle.org/m2/"
+        }
+    }
+
+    dependencies {
+        // Uncomment to run this example stand-alone
+        //classpath 'gradle.plugins.com.github.lookout:service-artifact-plugin:0.2.0'
+
+
+        /***********************************************************************/
+        /* These settings are only needed for Gradle Integration Testing */
+        classpath 'com.github.lookout:service-artifact-plugin:%%VERSION%%'
+        classpath fileTree('../../repo')
+        /***********************************************************************/
+    }
+}
+
+apply plugin: 'com.github.lookout.service-artifact'
+
+version = service.version('1.0')
+description = 'A Scala backend for the multi-project service'
+group = 'com.github.lookout.service-artifact'
+
+service {
+    component('backend', type: service.Scala) {
+        mainClass 'com.github.lookout.serviceartifact.BasicServer'
+    }
+}
+
+repositories {
+    maven { url 'http://maven.twttr.com' }
+}
+
+dependencies {
+    compile 'com.twitter:twitter-server_2.10:1.10.0+'
+}
+
+
+/* Only present for integration testing */
+task runGradleTest {
+    dependsOn assembleService
+}

@@ -1,0 +1,45 @@
+buildscript {
+    repositories {
+        jcenter()
+
+        maven {
+          url "https://plugins.gradle.org/m2/"
+        }
+    }
+
+    dependencies {
+        // Uncomment to run this example stand-alone
+        //classpath 'gradle.plugins.com.github.lookout:service-artifact-plugin:0.2.0'
+
+
+        /***********************************************************************/
+        /* These settings are only needed for Gradle Integration Testing */
+        classpath 'com.github.lookout:service-artifact-plugin:%%VERSION%%'
+        classpath fileTree('../../repo')
+        /***********************************************************************/
+    }
+}
+
+apply plugin: 'com.github.lookout.service-artifact'
+
+version = service.version('1.0')
+description = 'An service composed of different components as sub-projects'
+group = 'com.github.lookout.service-artifact'
+
+service {
+    name 'multiproject-service'
+    dependencies 'zookeeper', 'kafka'
+
+    /* components are defined in their sub-projects */
+
+    data {
+        dependencies 'example-redis', 'example-h2'
+        migrations files('db/**/*.sql')
+    }
+}
+
+
+/* Only present for integration testing */
+task runGradleTest {
+    dependsOn assembleService
+}
