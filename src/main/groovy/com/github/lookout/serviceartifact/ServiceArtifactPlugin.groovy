@@ -67,5 +67,8 @@ class ServiceArtifactPlugin implements Plugin<Project> {
 
         /* With everything defined, let's bootstrap the service extension internals */
         service.bootstrap()
+        project.afterEvaluate {
+            service.afterEvaluateHook()
+        }
     }
 }

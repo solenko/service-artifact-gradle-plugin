@@ -34,12 +34,9 @@ class JRubyComponent extends AbstractComponent {
         project.apply plugin: 'java'
 
         artifactTask = createJRubyJarTask(project, computeArtifactTaskName(name))
-        logger.info("CREATED JAR TASK")
 
         /* Let's make sure assemble exists in some form so we can chain off it */
         project.tasks.maybeCreate('assemble').dependsOn(artifactTask)
-
-        //project.artifacts.add(ServiceArtifactPlugin.ARCHIVES_CONFIG, artifactTask)
     }
 
     /**
@@ -82,6 +79,8 @@ class JRubyComponent extends AbstractComponent {
     }
 
     protected Task createJRubyJarTask(Project project, String taskName) {
+        logger.info("Defining a task named ${taskName} of type JRubyJar")
+
         Task jar = project.task(taskName, type: JRubyJar) {
             group ServiceArtifactPlugin.GROUP_NAME
             description "Build a JRuby-based service jar"

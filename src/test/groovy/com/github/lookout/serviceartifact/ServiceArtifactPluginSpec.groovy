@@ -9,6 +9,8 @@ import org.gradle.api.tasks.bundling.Zip
 import org.gradle.api.tasks.bundling.Tar
 import org.gradle.testfixtures.ProjectBuilder
 
+import com.github.jrubygradle.jar.JRubyJar
+
 class ServiceArtifactPluginSpec extends Specification {
     Project project
 
@@ -119,19 +121,24 @@ class ServiceArtifactPluginSpec extends Specification {
 }
 
 
-@Ignore("Ignoring until jruby{} refactoring is complete")
 class ServiceArtifactPluginWithJRubySpec extends ServiceArtifactPluginSpec {
     boolean hasPlugins(Project project) {
         return (project.plugins.findPlugin('com.github.jruby-gradle.base') &&
                 project.plugins.findPlugin('com.github.jruby-gradle.jar'))
     }
 
+    protected String componentName = 'backend'
+
     void enableJRuby() {
         project.version = '1.0'
-        project.service { jruby {} }
+        project.service {
+            name 'spockJRuby'
+            component(componentName, type: JRuby) {
+            }
+        }
     }
 
-    def "when using the jruby{} closure the plugin should be added"() {
+    def "when using the component('', type: JRuby) closure the plugin should be added"() {
         given:
         enableJRuby()
 
@@ -140,30 +147,13 @@ class ServiceArtifactPluginWithJRubySpec extends ServiceArtifactPluginSpec {
     }
 
 
-    def "a serviceJar task should be present"() {
-        given:
-        enableJRuby()
-        Task jar = project.tasks.findByName('serviceJar')
-
-        expect:
-        jar instanceof Task
-    }
-
-    def "the default jar task should be disabled"() {
-        given:
-        enableJRuby()
-
-        expect:
-        project.tasks.findByName('jar').enabled == false
-    }
-
     def "artifacts{} should include the jar archive"() {
         given:
         enableJRuby()
         def c = project.configurations.findByName('serviceArchives')
 
         expect:
-        c.artifacts.find { it.archiveTask.is project.tasks.findByName('serviceJar')}
+        c.artifacts.find { it.archiveTask instanceof JRubyJar }
     }
 }
 

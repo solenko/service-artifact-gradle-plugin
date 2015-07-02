@@ -143,6 +143,34 @@ class ServiceArtifactExtensionSpec extends Specification {
         then:
         thrown(StopExecutionException)
     }
+
+    def "data() DSL method with dependencies should store them"() {
+        when:
+        extension.data { dependencies 'redis' }
+
+        then:
+        extension.data.dependencies.contains 'redis'
+    }
+
+    def "data() DSL method with migrations should store them"() {
+        when:
+        extension.data { migrations "path/to/some.sql" }
+
+        then:
+        extension.data.migrations.contains "path/to/some.sql"
+    }
+
+    def "data() DSL method should allow me to use files() for migrations"() {
+        given:
+        File migration = new File(project.projectDir, 'test.sql')
+        migration.withWriter { Writer w -> w.write("hello world") }
+
+        when:
+        extension.data { migrations fileTree(dir: projectDir, include: '*.sql') }
+
+        then:
+        !extension.data.migrations.isEmpty()
+    }
 }
 
 @Title("Verify complex behaviors manifested by the ServiceArtifactExtension")
@@ -180,6 +208,7 @@ class ServiceArtifactExtensionJRubyIntegrationSpec extends AppliedExtensionSpec 
 
     def setup() {
         this.project.service {
+            name 'spockJRuby'
             component(componentName, type: JRuby) {
             }
         }

@@ -36,11 +36,10 @@ service {
         mainScript "${projectDir}/src/main/ruby/main.rb"
     }
 
-    // TODO: implement the data DSL
-    //data {
-    //    dependencies 'example-redis', 'example-h2'
-    //    migrations files('db/**/*.sql')
-    //}
+    data {
+        dependencies 'example-redis', 'example-h2'
+        migrations fileTree(dir: projectDir, include: 'db/**/*.sql')
+    }
 }
 
 dependencies {

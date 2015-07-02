@@ -4,6 +4,7 @@ import com.github.lookout.serviceartifact.component.JRubyComponent
 import groovy.json.JsonBuilder
 import org.gradle.api.Project
 import org.gradle.api.Task
+import org.gradle.api.file.FileTree
 import org.gradle.api.tasks.StopExecutionException
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -37,6 +38,58 @@ class ServiceArtifactExtension {
     /** List of services that this service depends on */
     protected List<String> serviceDependencies = []
 
+    /**
+     * Container class for encapsulating some of the DSL configuration behavior
+     * behind the service { data { } } closure
+     */
+    class Data {
+        private Logger logger = LoggerFactory.getLogger(this.class)
+        private List<String> dependencies = []
+        private List<String> migrations = []
+        private Project project
+
+        Data(Project project) {
+            this.project = project
+        }
+
+        /**
+         * Add the list of arguments as dependencies
+         * @param arguments list of String objects representing data components
+         */
+        void dependencies(Object... arguments) {
+            this.dependencies.addAll(arguments)
+        }
+
+        /**
+         * migrations() DSL method for adding the migrations either as a list of
+         * String objects, or as a FileTree into the migrations list
+         */
+        void migrations(Object... arguments) {
+            arguments.each { Object argument ->
+                if (argument instanceof FileTree) {
+                    this.migrations.addAll((argument as FileTree).files)
+                }
+                else {
+                    this.migrations.add(argument)
+                }
+            }
+        }
+
+        File getProjectDir() {
+            return project.projectDir
+        }
+
+        /**
+         * Helper method to make the DSL more succinct. Exact same as Project
+         * fileTree
+         */
+        FileTree fileTree(Map args) {
+            return project.fileTree(args)
+        }
+    }
+
+    Data data
+
     ServiceArtifactExtension(final Project project) {
         this(project, [:])
     }
@@ -47,6 +100,7 @@ class ServiceArtifactExtension {
         this.env = env
 
         this.metadata = new Metadata(project.name, project.name, project.version)
+        this.data = new Data(project)
     }
 
     /**
@@ -184,6 +238,8 @@ class ServiceArtifactExtension {
      * @throws org.gradle.api.tasks.StopExecutionException
      */
     boolean validateMetadata() {
+        logger.info("Metadata: ${serviceName} (${serviceDependencies})")
+        logger.info("  data: ${this.data.dependencies} - ${this.data.migrations}")
         if (this.serviceName) {
             return true
         }
@@ -214,6 +270,12 @@ class ServiceArtifactExtension {
     }
 
     /**
+     * Configure a component of the given type
+     *
+     * @param keywordArguments Expected to receive a KW arg of "type" to make our DSL pretty
+     * @param name the name of the component getting configured
+     * @param configurationSpec
+     * @return the configured AbstractComponent instance
      */
     AbstractComponent component(Map keywordArguments, String name, Closure configurationSpec) {
         if (!(keywordArguments.type instanceof Class<AbstractComponent>)) {
@@ -227,7 +289,25 @@ class ServiceArtifactExtension {
         configurationSpec.delegate = instance
         configurationSpec.call(instance)
 
+        if (instance.artifactTask) {
+            project.artifacts.add(ServiceArtifactPlugin.ARCHIVES_CONFIG, instance.artifactTask)
+        }
+
         return instance
+    }
+
+    void data(Closure dataConfigurationSpec) {
+        dataConfigurationSpec.delegate = this.data
+        /* Since both the owner (this) and the Data object have .dependencies()
+         * we want to resolve to the delegate first
+         */
+        dataConfigurationSpec.resolveStrategy = Closure.DELEGATE_FIRST
+        dataConfigurationSpec.call(project)
+    }
+
+
+    void afterEvaluateHook() {
+        this.validateMetadata()
     }
 }
 
