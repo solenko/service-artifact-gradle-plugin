@@ -1,6 +1,7 @@
 package com.github.lookout.serviceartifact.scm
 
 import groovy.transform.TypeChecked
+import org.gradle.api.Project
 
 @TypeChecked
 class GerritHandler extends AbstractScmHandler {
@@ -8,7 +9,8 @@ class GerritHandler extends AbstractScmHandler {
     private final String GERRIT_PATCH  = 'GERRIT_PATCHSET_NUMBER'
     private final String GERRIT_REVISION  = 'GERRIT_PATCHSET_REVISION'
 
-    GerritHandler(Map<String, String> environment) {
+    GerritHandler(Project project, Map<String, String> environment) {
+        this.project = project
         this.env = environment
     }
 
@@ -48,7 +50,7 @@ class GerritHandler extends AbstractScmHandler {
 
 
     @Override
-    static AbstractScmHandler build(Map<String, String> env) {
-        return new GerritHandler(env)
+    static AbstractScmHandler build(Project project, Map<String, String> env) {
+        return new GerritHandler(project, env)
     }
 }

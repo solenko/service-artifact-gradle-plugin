@@ -3,6 +3,7 @@ package com.github.lookout.serviceartifact.scm
 import groovy.transform.TypeChecked
 import org.ajoberstar.grgit.Grgit
 import org.eclipse.jgit.errors.RepositoryNotFoundException
+import org.gradle.api.Project
 
 /**
  * Git handler for a project in a traditional Git repository
@@ -12,8 +13,9 @@ class GitHandler extends AbstractScmHandler {
     private final String gitDir = '.git'
     private Grgit _git = null
 
-    GitHandler(Map<String, String> environment) {
+    GitHandler(Project project, Map<String, String> environment) {
         this.env = environment
+        this.project = project
     }
 
     boolean isAvailable() {
@@ -40,8 +42,8 @@ class GitHandler extends AbstractScmHandler {
     }
 
     @Override
-    static AbstractScmHandler build(Map<String, String> env) {
-        return new GitHandler(env)
+    static AbstractScmHandler build(Project project, Map<String, String> env) {
+        return new GitHandler(project, env)
     }
 
 
@@ -49,7 +51,7 @@ class GitHandler extends AbstractScmHandler {
     protected Grgit getGit() {
         if (this._git == null) {
             try {
-                File repoDir = findGitRoot('.')
+                File repoDir = findGitRoot(project?.projectDir)
 
                 if (!repoDir) {
                     return null
@@ -72,19 +74,18 @@ class GitHandler extends AbstractScmHandler {
      * @param currentDirectory A string representing a relative or absolute path
      * @return File instance if we've found a git root, or null
      */
-    protected File findGitRoot(String currentDirectory) {
+    protected File findGitRoot(File current) {
         /* this means we've been invoked recursively with a null parent */
-        if (currentDirectory == null) {
+        if (current == null) {
             return null
         }
 
-        File current = new File(currentDirectory)
         File gitDir = getGitDirFor(current.absolutePath)
 
         if (gitDir.isDirectory()) {
             return current
         }
-        return findGitRoot((new File(current.absolutePath)).parent)
+        return findGitRoot(current.parentFile)
     }
 
     protected File getGitDirFor(String absolutePath) {

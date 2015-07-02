@@ -132,7 +132,8 @@ class ServiceArtifactExtensionSpec extends Specification {
         versionMap['version']
         versionMap['name']
         versionMap['buildDate']
-        versionMap['revision']
+        /* since we're in a temp dir, our revision should be empty */
+        versionMap['revision'] == null
         versionMap['builtOn']
     }
 
