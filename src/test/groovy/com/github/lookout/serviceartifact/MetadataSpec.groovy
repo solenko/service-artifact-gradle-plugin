@@ -27,14 +27,12 @@ class MetadataSpec extends Specification {
     def "metadata should serialize to YAML"() {
         given:
         Metadata metadata = new Metadata('sap', 'api', '1.0')
-        ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
         String output
 
         when:
-        output = mapper.writeValueAsString(metadata)
+        output = metadata.toYaml()
 
         then:
         output instanceof String
-        println output
     }
 }

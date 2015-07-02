@@ -4,12 +4,12 @@ import com.github.lookout.serviceartifact.component.JRubyComponent
 import groovy.json.JsonBuilder
 import org.gradle.api.Project
 import org.gradle.api.Task
-import org.gradle.api.file.FileTree
 import org.gradle.api.tasks.StopExecutionException
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
 import com.github.lookout.serviceartifact.scm.AbstractScmHandler
+import com.github.lookout.serviceartifact.metadata.Data
 
 /**
  * ServiceArtifactExtension provides the service{} DSL into Gradle files which
@@ -37,58 +37,8 @@ class ServiceArtifactExtension {
     protected String serviceName = null
     /** List of services that this service depends on */
     protected List<String> serviceDependencies = []
-
-    /**
-     * Container class for encapsulating some of the DSL configuration behavior
-     * behind the service { data { } } closure
-     */
-    class Data {
-        private Logger logger = LoggerFactory.getLogger(this.class)
-        private List<String> dependencies = []
-        private List<String> migrations = []
-        private Project project
-
-        Data(Project project) {
-            this.project = project
-        }
-
-        /**
-         * Add the list of arguments as dependencies
-         * @param arguments list of String objects representing data components
-         */
-        void dependencies(Object... arguments) {
-            this.dependencies.addAll(arguments)
-        }
-
-        /**
-         * migrations() DSL method for adding the migrations either as a list of
-         * String objects, or as a FileTree into the migrations list
-         */
-        void migrations(Object... arguments) {
-            arguments.each { Object argument ->
-                if (argument instanceof FileTree) {
-                    this.migrations.addAll((argument as FileTree).files)
-                }
-                else {
-                    this.migrations.add(argument)
-                }
-            }
-        }
-
-        File getProjectDir() {
-            return project.projectDir
-        }
-
-        /**
-         * Helper method to make the DSL more succinct. Exact same as Project
-         * fileTree
-         */
-        FileTree fileTree(Map args) {
-            return project.fileTree(args)
-        }
-    }
-
-    Data data
+    /** Data container object for implementing the data {} DSL */
+    protected Data data
 
     ServiceArtifactExtension(final Project project) {
         this(project, [:])
@@ -110,7 +60,7 @@ class ServiceArtifactExtension {
         String versionFilePath = String.format("%s/VERSION", this.project.buildDir)
         String metadataFilePath = String.format("%s/etc/metadata.conf", this.project.buildDir)
 
-        Task version = project.tasks.create(ServiceArtifactPlugin.VERSION_TASK) {
+        Task versionTask = project.tasks.create(ServiceArtifactPlugin.VERSION_TASK) {
             group ServiceArtifactPlugin.GROUP_NAME
             description "Generate the service artifact version information"
 
@@ -123,7 +73,7 @@ class ServiceArtifactExtension {
             }
         }
 
-        Task metadata = project.tasks.create(ServiceArtifactPlugin.METADATA_TASK) {
+        Task metadataTask = project.tasks.create(ServiceArtifactPlugin.METADATA_TASK) {
             group ServiceArtifactPlugin.GROUP_NAME
             description "Generate the service artifact etc/metadata.conf"
 
@@ -134,12 +84,13 @@ class ServiceArtifactExtension {
             Task archiveTask = this.project.tasks.findByName(it)
 
             if (archiveTask instanceof Task) {
-                archiveTask.dependsOn(version)
-                archiveTask.dependsOn(metadata)
+                archiveTask.dependsOn(versionTask)
+                archiveTask.dependsOn(metadataTask)
                 /* Pack the VERSION file containing some built metadata about
                  * this artifact to help trace it back to builds in the future
                  */
-                archiveTask.into(this.archiveDirName) { from version.outputs.files }
+                archiveTask.into(this.archiveDirName) { from versionTask.outputs.files }
+                archiveTask.into(this.archiveDirName) { from metadataTask.outputs.files }
             }
         }
     }
@@ -188,7 +139,7 @@ class ServiceArtifactExtension {
         }
 
         this.scmHandlerImpls.find {
-            AbstractScmHandler handler = it.build(this.env)
+            AbstractScmHandler handler = it.build(this.project, this.env)
 
             if (handler.isAvailable()) {
                 this._scmHandler = handler
