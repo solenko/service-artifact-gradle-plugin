@@ -3,13 +3,10 @@ package com.github.lookout.serviceartifact
 import spock.lang.*
 
 import org.gradle.api.Project
-import org.gradle.api.Plugin
 import org.gradle.api.Task
 import org.gradle.api.tasks.bundling.Zip
 import org.gradle.api.tasks.bundling.Tar
 import org.gradle.testfixtures.ProjectBuilder
-
-import com.github.jrubygradle.jar.JRubyJar
 
 class ServiceArtifactPluginSpec extends Specification {
     Project project
@@ -120,42 +117,6 @@ class ServiceArtifactPluginSpec extends Specification {
     }
 }
 
-
-class ServiceArtifactPluginWithJRubySpec extends ServiceArtifactPluginSpec {
-    boolean hasPlugins(Project project) {
-        return (project.plugins.findPlugin('com.github.jruby-gradle.base') &&
-                project.plugins.findPlugin('com.github.jruby-gradle.jar'))
-    }
-
-    protected String componentName = 'backend'
-
-    void enableJRuby() {
-        project.version = '1.0'
-        project.service {
-            name 'spockJRuby'
-            component(componentName, type: JRuby) {
-            }
-        }
-    }
-
-    def "when using the component('', type: JRuby) closure the plugin should be added"() {
-        given:
-        enableJRuby()
-
-        expect:
-        hasPlugins(project)
-    }
-
-
-    def "artifacts{} should include the jar archive"() {
-        given:
-        enableJRuby()
-        def c = project.configurations.findByName('serviceArchives')
-
-        expect:
-        c.artifacts.find { it.archiveTask instanceof JRubyJar }
-    }
-}
 
 class ServiceArtifactPluginWithScalaSpec extends ServiceArtifactPluginSpec {
     boolean hasPlugins(Project project) {

@@ -29,6 +29,8 @@ description = 'Gradle plugin for building a prim and proper Lookout service arti
 // Dependency management
 ////////////////////////
 configurations {
+    integrationCompile.extendsFrom testCompile
+    integrationRuntime.extendsFrom testRuntime
     gradleTest.extendsFrom compile
 }
 
@@ -79,6 +81,16 @@ dependencies {
 
 // Tasks
 ////////
+sourceSets {
+    integration {
+        groovy {
+            srcDir file('src/integration/groovy')
+        }
+
+        runtimeClasspath += main.output
+    }
+}
+
 test {
     maxParallelForks 2
     testLogging {
@@ -89,6 +101,21 @@ test {
         events "passed", "skipped", "failed", "standardOut", "standardError"
     }
 }
+
+task integrationTest(type: Test) {
+    maxParallelForks 2
+    testClassesDir = sourceSets.integration.output.classesDir
+    classpath = sourceSets.integration.runtimeClasspath
+    testLogging {
+        /* we want more test failure information, see:
+         *  <http://mrhaki.blogspot.com/2013/05/gradle-goodness-show-more-information.html>
+         */
+        exceptionFormat = 'full'
+        events "passed", "skipped", "failed", "standardOut", "standardError"
+    }
+}
+check.dependsOn integrationTest
+
 /* Whenever we're building an artifact, we should run the tests */
 assemble.dependsOn check
 jar.dependsOn check
