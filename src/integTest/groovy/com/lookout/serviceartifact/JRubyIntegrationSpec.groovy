@@ -4,12 +4,14 @@ import spock.lang.*
 
 import org.gradle.api.Project
 import org.gradle.api.artifacts.Configuration
-import org.gradle.testfixtures.ProjectBuilder
 
 import nebula.test.PluginProjectSpec
 import nebula.test.IntegrationSpec
 
 import com.github.jrubygradle.jar.JRubyJar
+
+import java.util.zip.ZipEntry
+import java.util.zip.ZipFile
 
 /**
  * Verify that the end-to-end JRuby support works
@@ -62,28 +64,83 @@ class JRubyIntegrationSpec extends PluginProjectSpec {
 }
 
 class JRubyFullIntegrationSpec extends IntegrationSpec {
+    protected String version = '1.0'
+    protected String projectName = 'fullinteg'
 
-    def "the assemble task should produce a tar"() {
-        given:
-        String version = '1.0'
-        String projectName = 'fullinteg'
+    def setup() {
         settingsFile << "rootProject.name = '${projectName}'"
         buildFile << """
 apply plugin: 'com.github.lookout.service-artifact'
 
 version = '${version}'
+"""
+        /* XXX: why do I have to make the buildDir myself? */
+        directory('build')
+    }
 
+    Object zipContains(String zipPath, String expectedFile) {
+        ZipFile zf = new ZipFile(new File(zipPath, projectDir))
+        return zf.entries().find { ZipEntry entry -> entry.name.matches(expectedFile) }
+    }
+
+
+    def "the assemble task should produce a tar"() {
+        given:
+        buildFile << """
 service {
   name '${projectName}'
   component('api', type: JRuby) { }
 }
 """
 
-        /* XXX: why do I have to make the buildDir myself? */
-        directory('build')
-
         expect:
         runTasksSuccessfully('assemble')
         fileExists("build/distributions/${projectName}-${version}.tar")
     }
+
+
+    def "assembleApi should produce a valid zip file"() {
+        given:
+        createFile('app.rb') << 'puts "hello world"'
+        buildFile << """
+service {
+  name '${projectName}'
+  component('api', type: JRuby) {
+    include 'app.rb'
+  }
+}
+"""
+        expect:
+        runTasksSuccessfully('assembleApi')
+        String jarPath = "build/libs/${projectName}-jruby-${version}.jar"
+        fileExists(jarPath)
+        zipContains(jarPath, 'app.rb')
+    }
+
+
+    def "assembleApi should produce a valid executable jar"() {
+        given:
+        String jarPath = "build/libs/${projectName}-jruby-${version}.jar"
+        String canaryFile = 'ruby-executed-successfully'
+        /* what if we use a groovy string to generate a ruby file? brilliant! */
+        createFile('app.rb') << "File.open('${projectDir}/${canaryFile}', 'w+') { |f| f.write('hello') }"
+        buildFile << """
+service {
+  name '${projectName}'
+  component('api', type: JRuby) {
+    mainScript 'app.rb'
+  }
+}
+
+task run(type: Exec) {
+    commandLine 'java', '-jar', '${jarPath}'
+    standardOutput System.err
+    dependsOn assembleApi
+}
+"""
+        expect:
+        runTasksSuccessfully('run')
+        fileExists(canaryFile)
+    }
+
 }
