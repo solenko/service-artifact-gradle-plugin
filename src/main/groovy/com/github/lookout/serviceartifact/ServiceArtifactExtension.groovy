@@ -58,7 +58,7 @@ class ServiceArtifactExtension {
      */
     void bootstrap() {
         String versionFilePath = String.format("%s/VERSION", this.project.buildDir)
-        String metadataFilePath = String.format("%s/etc/metadata.conf", this.project.buildDir)
+        String metadataFilePath = String.format("%s/metadata.conf", this.project.buildDir)
 
         Task versionTask = project.tasks.create(ServiceArtifactPlugin.VERSION_TASK) {
             group ServiceArtifactPlugin.GROUP_NAME
@@ -78,19 +78,28 @@ class ServiceArtifactExtension {
             description "Generate the service artifact etc/metadata.conf"
 
             outputs.file(metadataFilePath).upToDateWhen { false }
+
+            doFirst {
+                new File(metadataFilePath).write('hello')
+            }
         }
 
-        [ServiceArtifactPlugin.TAR_TASK, ServiceArtifactPlugin.ZIP_TASK].each {
-            Task archiveTask = this.project.tasks.findByName(it)
 
-            if (archiveTask instanceof Task) {
-                archiveTask.dependsOn(versionTask)
-                archiveTask.dependsOn(metadataTask)
-                /* Pack the VERSION file containing some built metadata about
-                 * this artifact to help trace it back to builds in the future
-                 */
-                archiveTask.into(this.archiveDirName) { from versionTask.outputs.files }
-                archiveTask.into(this.archiveDirName) { from metadataTask.outputs.files }
+        /* setting this up last so archiveDirName gets the right version and other things */
+        project.afterEvaluate {
+            [ServiceArtifactPlugin.TAR_TASK, ServiceArtifactPlugin.ZIP_TASK].each {
+                Task archiveTask = this.project.tasks.findByName(it)
+
+                if (archiveTask instanceof Task) {
+                    archiveTask.dependsOn(versionTask)
+                    archiveTask.dependsOn(metadataTask)
+                    /* Pack the VERSION file containing some built metadata about
+                     * this artifact to help trace it back to builds in the future
+                     */
+                    logger.info("THIS IS: ${this.archiveDirName}")
+                    archiveTask.into(this.archiveDirName) { from versionTask.outputs.files }
+                    archiveTask.into("${this.archiveDirName}/etc") { from metadataTask.outputs.files }
+                }
             }
         }
     }

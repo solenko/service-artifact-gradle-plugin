@@ -99,8 +99,9 @@ service {
     }
 
 
-    def "assembleApi should produce a valid zip file"() {
+    def "assembleApi should produce a valid jar file"() {
         given:
+        String jarPath = "build/libs/${projectName}-jruby-${version}.jar"
         createFile('app.rb') << 'puts "hello world"'
         buildFile << """
 service {
@@ -112,8 +113,9 @@ service {
 """
         expect:
         runTasksSuccessfully('assembleApi')
-        String jarPath = "build/libs/${projectName}-jruby-${version}.jar"
         fileExists(jarPath)
+
+        and: "it should contain our custom ruby source code"
         zipContains(jarPath, 'app.rb')
     }
 
@@ -141,6 +143,25 @@ task run(type: Exec) {
         expect:
         runTasksSuccessfully('run')
         fileExists(canaryFile)
+    }
+
+
+    def "assemble should produce a zip with an etc/metadata.conf file"() {
+        given:
+        String zipPath = "build/distributions/${projectName}-${version}.zip"
+        buildFile << """
+service {
+  name '${projectName}'
+  component('api', type: JRuby) {
+  }
+}
+"""
+        expect:
+        runTasksSuccessfully('assemble')
+        fileExists(zipPath)
+
+        and: "it should contain etc/metadata.conf"
+        zipContains(zipPath, "${projectName}-${version}/etc/metadata.conf")
     }
 
 }
