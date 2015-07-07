@@ -80,7 +80,7 @@ class ServiceArtifactExtension {
             outputs.file(metadataFilePath).upToDateWhen { false }
 
             doFirst {
-                new File(metadataFilePath).write('hello')
+                new File(metadataFilePath).write(project.service.metadata.toYaml())
             }
         }
 
@@ -174,7 +174,7 @@ class ServiceArtifactExtension {
      * Return the computed Map<> of metadata that is to be written to the etc/metadata.conf
      * inside of the service artifact
      */
-    Map<String, Object> getMetadata() {
+    Metadata getMetadata() {
         return this.metadata
     }
 

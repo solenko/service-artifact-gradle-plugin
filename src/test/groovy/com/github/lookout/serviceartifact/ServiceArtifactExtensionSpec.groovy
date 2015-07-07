@@ -15,6 +15,8 @@ abstract class AppliedExtensionSpec extends Specification {
     def setup() {
         this.project = ProjectBuilder.builder().build()
         this.project.apply plugin: 'com.github.lookout.service-artifact'
+
+        this.project.service { name 'spock' }
     }
 }
 
@@ -182,7 +184,10 @@ class ExtensionIntegrationSpec extends AppliedExtensionSpec {
         Task zip = this.project.tasks.findByName('serviceZip')
         Task tar = this.project.tasks.findByName('serviceTar')
 
-        expect: "the compressed archives to rely on serviceVersionInfo"
+        when:
+        project.evaluate()
+
+        then: "the compressed archives to rely on serviceVersionInfo"
         zip.dependsOn.find(matcher)
         tar.dependsOn.find(matcher)
     }
@@ -193,7 +198,10 @@ class ExtensionIntegrationSpec extends AppliedExtensionSpec {
         Task zip = this.project.tasks.findByName('serviceZip')
         Task tar = this.project.tasks.findByName('serviceTar')
 
-        expect: "the compressed archives to rely on serviceVersionInfo"
+        when:
+        project.evaluate()
+
+        then: "the compressed archives to rely on serviceVersionInfo"
         zip.dependsOn.find(matcher)
         tar.dependsOn.find(matcher)
     }

@@ -1,18 +1,20 @@
 package com.github.lookout.serviceartifact
 
-import groovy.json.JsonSlurper
-import spock.lang.*
-
-import org.gradle.api.Project
-import org.gradle.api.artifacts.Configuration
-
-import nebula.test.PluginProjectSpec
-import nebula.test.IntegrationSpec
-
-import com.github.jrubygradle.jar.JRubyJar
 
 import java.util.zip.ZipEntry
 import java.util.zip.ZipFile
+import groovy.json.JsonSlurper
+import org.gradle.api.Project
+import org.gradle.api.artifacts.Configuration
+import spock.lang.*
+
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
+import com.github.jrubygradle.jar.JRubyJar
+import nebula.test.PluginProjectSpec
+import nebula.test.IntegrationSpec
+import nebula.test.functional.ExecutionResult
+
 
 /**
  * Verify that the end-to-end JRuby support works
@@ -81,7 +83,18 @@ version = '${version}'
 
     Object zipContains(String zipPath, String expectedFile) {
         ZipFile zf = new ZipFile(new File(zipPath, projectDir))
-        zf.entries().find { ZipEntry entry -> entry.name.matches(expectedFile) }
+        return zf.entries().find { ZipEntry entry -> entry.name.matches(expectedFile) }
+    }
+
+    String zipFileContents(String zipPath, String fileInZip) {
+        ZipFile zf = new ZipFile(new File(zipPath, projectDir))
+        return zf.getInputStream(zf.getEntry(fileInZip)).text
+    }
+
+    Map parseYaml(String yamlString) {
+        /* needed for deserializing yaml */
+        ObjectMapper mapper = new ObjectMapper(new YAMLFactory())
+        return mapper.readValue(yamlString, Map)
     }
 
 
@@ -120,7 +133,6 @@ service {
         zipContains(jarPath, 'app.rb')
     }
 
-
     def "assembleApi should produce a valid executable jar"() {
         given:
         String jarPath = "build/libs/${projectName}-jruby-${version}.jar"
@@ -146,9 +158,12 @@ task run(type: Exec) {
         fileExists(canaryFile)
     }
 
-
+    @Ignore("Waiting on a refactor of metadata generation to couple more with components")
     def "assemble should produce a zip with an etc/metadata.conf file"() {
         given:
+        Map metadata = null
+        ExecutionResult result = null
+        String metadataPath = "${projectName}-${version}/etc/metadata.conf"
         String zipPath = "build/distributions/${projectName}-${version}.zip"
         buildFile << """
 service {
@@ -157,12 +172,23 @@ service {
   }
 }
 """
-        expect:
-        runTasksSuccessfully('assemble')
+        when:
+        result = runTasks('assemble')
+        metadata = parseYaml(zipFileContents(zipPath, metadataPath))
+
+        then: "the tasks should have succeeded"
+        !result.failure
+
+        and: "the zip should be present"
         fileExists(zipPath)
 
         and: "it should contain etc/metadata.conf"
-        zipContains(zipPath, "${projectName}-${version}/etc/metadata.conf")
+        zipContains(zipPath, metadataPath)
+
+        and: "the metadata.conf should be valid YAML"
+        metadata instanceof Map
+        metadata.component.version == version
+
     }
 
     def "assemble should produce a zip file with a VERSION file"() {
@@ -185,7 +211,6 @@ service {
         zipContains(zipPath, versionPath)
 
         and: "the VERSION file should be JSON"
-        ZipFile zf = new ZipFile(new File(zipPath, projectDir))
-        json.parseText(zf.getInputStream(zf.getEntry(versionPath)).text) instanceof Map
+        json.parseText(zipFileContents(zipPath, versionPath)) instanceof Map
     }
 }
