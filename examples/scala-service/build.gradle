@@ -25,7 +25,10 @@ description = 'A sample Scala service to built into an artifact'
 group = 'com.github.lookout.service-artifact'
 
 service {
-    scala {
+    name 'example-service'
+    dependencies 'dataservice'
+
+    component('app', type: Scala) {
         mainClass 'com.github.lookout.serviceartifact.BasicServer'
     }
 }
@@ -41,5 +44,5 @@ dependencies {
 
 /* Only present for integration testing */
 task runGradleTest {
-    dependsOn assembleService
+    dependsOn assemble
 }
