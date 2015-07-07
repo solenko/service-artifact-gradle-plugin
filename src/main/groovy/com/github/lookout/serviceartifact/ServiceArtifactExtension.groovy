@@ -57,8 +57,7 @@ class ServiceArtifactExtension {
      * Bootstrap and set up whatever internal tasks/helpers we need to set up
      */
     void bootstrap() {
-        String versionFilePath = String.format("%s/VERSION", this.project.buildDir)
-        String metadataFilePath = String.format("%s/metadata.conf", this.project.buildDir)
+        String versionFilePath = String.format("%s/VERSION", project.buildDir)
 
         Task versionTask = project.tasks.create(ServiceArtifactPlugin.VERSION_TASK) {
             group ServiceArtifactPlugin.GROUP_NAME
@@ -70,35 +69,6 @@ class ServiceArtifactExtension {
                 JsonBuilder builder = new JsonBuilder()
                 builder(generateVersionMap())
                 new File(versionFilePath).write(builder.toPrettyString())
-            }
-        }
-
-        Task metadataTask = project.tasks.create(ServiceArtifactPlugin.METADATA_TASK) {
-            group ServiceArtifactPlugin.GROUP_NAME
-            description "Generate the service artifact etc/metadata.conf"
-
-            outputs.file(metadataFilePath).upToDateWhen { false }
-
-            doFirst {
-                new File(metadataFilePath).write(project.service.metadata.toYaml())
-            }
-        }
-
-
-        /* setting this up last so archiveDirName gets the right version and other things */
-        project.afterEvaluate {
-            [ServiceArtifactPlugin.TAR_TASK, ServiceArtifactPlugin.ZIP_TASK].each {
-                Task archiveTask = this.project.tasks.findByName(it)
-
-                if (archiveTask instanceof Task) {
-                    archiveTask.dependsOn(versionTask)
-                    archiveTask.dependsOn(metadataTask)
-                    /* Pack the VERSION file containing some built metadata about
-                     * this artifact to help trace it back to builds in the future
-                     */
-                    archiveTask.into(this.archiveDirName) { from versionTask.outputs.files }
-                    archiveTask.into("${this.archiveDirName}/etc") { from metadataTask.outputs.files }
-                }
             }
         }
     }
@@ -242,8 +212,9 @@ class ServiceArtifactExtension {
         }
 
         AbstractComponent instance = keywordArguments.type.newInstance()
-        instance.apply(this.project, name)
+        instance.apply(this.project, this, name)
         instance.chainCompressedArchives('serviceTar', 'serviceZip')
+        instance.createCompressedTasks(this.archiveDirName)
 
         configurationSpec.delegate = instance
         configurationSpec.call(instance)

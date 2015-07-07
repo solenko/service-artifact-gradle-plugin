@@ -99,7 +99,6 @@ test {
         events "passed", "skipped", "failed", "standardOut", "standardError"
     }
 }
-check.dependsOn integrationTest
 
 /* Whenever we're building an artifact, we should run the tests */
 assemble.dependsOn check
@@ -121,6 +120,7 @@ integrationTest.testLogging {
     exceptionFormat = 'full'
     events "passed", "skipped", "failed", "standardOut", "standardError"
 }
+check.dependsOn integrationTest
 
 codenarc {
     sourceSets = [sourceSets.main]

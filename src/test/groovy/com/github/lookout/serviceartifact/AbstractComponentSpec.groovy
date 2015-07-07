@@ -29,7 +29,7 @@ class AbstractComponentSpec extends Specification {
 
     def "apply() should raise if Project is not valid"() {
         when:
-        component.apply(null, 'spork')
+        component.apply(null, null, 'spork')
 
         then:
         thrown(StopExecutionException)
@@ -40,7 +40,7 @@ class AbstractComponentSpec extends Specification {
         this.project = ProjectBuilder.builder().build()
 
         when:
-        component.apply(project, '')
+        component.apply(project, null, '')
 
         then:
         thrown(StopExecutionException)
@@ -52,7 +52,7 @@ class AbstractComponentSpec extends Specification {
         String name = 'spock-component'
 
         when:
-        component.apply(project, name)
+        component.apply(project, null, name)
 
         then:
         component.project == project
@@ -64,7 +64,7 @@ class AbstractComponentSpec extends Specification {
         String taskName = 'spockTar'
 
         when:
-        component.apply(project, 'spock')
+        component.apply(project, null, 'spock')
 
         then:
         component.chainCompressedArchives(taskName) == false
@@ -77,7 +77,7 @@ class AbstractComponentSpec extends Specification {
         def result
 
         when:
-        component.apply(project, 'spock')
+        component.apply(project, null, 'spock')
         component.artifactTask = artifactTask
         result = component.chainCompressedArchives(compressedArchive.name)
 

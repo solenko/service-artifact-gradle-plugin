@@ -82,14 +82,6 @@ class ServiceArtifactExtensionSpec extends Specification {
         this.project.tasks.findByName('serviceVersionInfo')
     }
 
-    def "bootstrap() should define serviceMetadata"() {
-        when:
-        extension.bootstrap()
-
-        then:
-        this.project.tasks.findByName('serviceMetadata')
-    }
-
     def "name() should add service:name to serviceMetadata"() {
         given:
         String serviceName = 'sample-service'
@@ -175,38 +167,6 @@ class ServiceArtifactExtensionSpec extends Specification {
         !extension.data.migrations.isEmpty()
     }
 }
-
-@Title("Verify complex behaviors manifested by the ServiceArtifactExtension")
-class ExtensionIntegrationSpec extends AppliedExtensionSpec {
-    def "bootstrap() should have set up dependencies for serviceVersionInfo"() {
-        given:
-        Closure matcher = { (it instanceof Task) && (it.name == 'serviceVersionInfo') }
-        Task zip = this.project.tasks.findByName('serviceZip')
-        Task tar = this.project.tasks.findByName('serviceTar')
-
-        when:
-        project.evaluate()
-
-        then: "the compressed archives to rely on serviceVersionInfo"
-        zip.dependsOn.find(matcher)
-        tar.dependsOn.find(matcher)
-    }
-
-    def "bootstrap() should have set up dependencies for serviceMetadata"() {
-        given:
-        Closure matcher = { (it instanceof Task) && (it.name == 'serviceMetadata') }
-        Task zip = this.project.tasks.findByName('serviceZip')
-        Task tar = this.project.tasks.findByName('serviceTar')
-
-        when:
-        project.evaluate()
-
-        then: "the compressed archives to rely on serviceVersionInfo"
-        zip.dependsOn.find(matcher)
-        tar.dependsOn.find(matcher)
-    }
-}
-
 
 /**
  * Test the functionality of the service { jruby{} } closure

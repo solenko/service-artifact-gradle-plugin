@@ -24,7 +24,7 @@ class JRubyComponentSpec extends Specification {
 
     def "apply() should install the necessary plugins"() {
         when:
-        component.apply(project, 'spock')
+        component.apply(project, null, 'spock')
 
         then:
         hasPlugins(project)
@@ -37,7 +37,7 @@ class JRubyComponentSpec extends Specification {
 
     def "getArtifactTask() should return a real task after apply()" () {
         when:
-        component.apply(project, 'spock')
+        component.apply(project, null, 'spock')
 
         then:
         component.artifactTask instanceof Task
@@ -51,7 +51,7 @@ class JRubyComponentSpec extends Specification {
 
     def "mainScript() should set up the entrypoint in the JRuby Jar"() {
         when:
-        component.apply(project, 'spock')
+        component.apply(project, null, 'spock')
         component.mainScript 'main.rb'
 
         then:
@@ -63,7 +63,7 @@ class JRubyComponentSpec extends Specification {
 
     def "include() with null should no-op"() {
         when:
-        component.apply(project, 'spock')
+        component.apply(project, null, 'spock')
         component.include()
 
         then:
@@ -72,7 +72,7 @@ class JRubyComponentSpec extends Specification {
 
     def "include() should include files in a consistent relative structure in the JRuby Jar"() {
         when:
-        component.apply(project, 'spock')
+        component.apply(project, null, 'spock')
         component.include 'main.rb'
 
         then:

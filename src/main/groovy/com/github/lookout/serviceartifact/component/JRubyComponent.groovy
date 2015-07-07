@@ -26,8 +26,8 @@ class JRubyComponent extends AbstractComponent {
     String mainScript = null
 
     @Override
-    void apply(Project project, String name) {
-        super.apply(project, name)
+    void apply(Project project, Object ext, String name) {
+        super.apply(project, ext, name)
 
         project.apply plugin: 'com.github.jruby-gradle.base'
         project.apply plugin: 'com.github.jruby-gradle.jar'

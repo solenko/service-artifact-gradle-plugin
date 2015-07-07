@@ -158,7 +158,6 @@ task run(type: Exec) {
         fileExists(canaryFile)
     }
 
-    @Ignore("Waiting on a refactor of metadata generation to couple more with components")
     def "assemble should produce a zip with an etc/metadata.conf file"() {
         given:
         Map metadata = null
@@ -169,6 +168,10 @@ task run(type: Exec) {
 service {
   name '${projectName}'
   component('api', type: JRuby) {
+  }
+
+  data {
+    dependencies 'api-redis'
   }
 }
 """
@@ -188,6 +191,7 @@ service {
         and: "the metadata.conf should be valid YAML"
         metadata instanceof Map
         metadata.component.version == version
+        metadata.data.dependencies.contains 'api-redis'
 
     }
 

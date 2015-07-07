@@ -1,6 +1,7 @@
 package com.github.lookout.serviceartifact.metadata
 
 import com.fasterxml.jackson.annotation.JsonProperty
+import com.fasterxml.jackson.annotation.JsonIgnore
 import org.gradle.api.Project
 import org.gradle.api.file.FileTree
 import org.slf4j.Logger
@@ -46,6 +47,7 @@ class Data {
         }
     }
 
+    @JsonIgnore
     File getProjectDir() {
         return project.projectDir
     }
