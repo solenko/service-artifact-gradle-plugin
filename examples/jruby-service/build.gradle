@@ -16,8 +16,8 @@ buildscript {
 
         /***********************************************************************/
         /* These settings are only needed for Gradle Integration Testing */
-        classpath 'com.github.lookout:service-artifact-plugin:0.4.0'
-        //classpath fileTree('../../repo')
+        classpath 'com.github.lookout:service-artifact-plugin:%%VERSION%%'
+        classpath fileTree('../../repo')
         /***********************************************************************/
     }
 }
@@ -50,5 +50,5 @@ dependencies {
 
 /* Only present for integration testing */
 task runGradleTest {
-    dependsOn assembleService
+    dependsOn assemble
 }

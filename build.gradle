@@ -109,7 +109,8 @@ gradleTest {
      * according to ysb33r there's not enough of a difference in APIs between
      * version 2.0->2.2 and 2.2->2.4 to be worth testing
      */
-    versions '2.0', '2.2', '2.4'
+    //versions '2.0', '2.2', '2.4'
+    versions '2.0'
     dependsOn jar
 }
 

@@ -1,5 +1,7 @@
 package com.github.lookout.serviceartifact.metadata
 
+import groovy.transform.TypeChecked
+
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonIgnore
 import org.gradle.api.Project
@@ -11,6 +13,7 @@ import org.slf4j.LoggerFactory
  * Container class for encapsulating some of the DSL configuration behavior
  * behind the service { data { } } closure
  */
+@TypeChecked
 class Data {
     protected Logger logger = LoggerFactory.getLogger(this.class)
     protected Project project
@@ -29,7 +32,7 @@ class Data {
      * @param arguments list of String objects representing data components
      */
     void dependencies(Object... arguments) {
-        this.dependencies.addAll(arguments)
+        this.dependencies.addAll(arguments as List<String>)
     }
 
     /**
@@ -39,10 +42,11 @@ class Data {
     void migrations(Object... arguments) {
         arguments.each { Object argument ->
             if (argument instanceof FileTree) {
-                this.migrations.addAll((argument as FileTree).files)
+                FileTree tree = argument as FileTree
+                this.migrations.addAll(tree.files.collect { File f -> f.absolutePath })
             }
             else {
-                this.migrations.add(argument)
+                this.migrations.add(argument as String)
             }
         }
     }
@@ -58,5 +62,10 @@ class Data {
      */
     FileTree fileTree(Map args) {
         return project.fileTree(args)
+    }
+
+    String toString() {
+        return String.format("<Data@%d> %s (%s) - %s (%s)", hashCode(), this.dependencies, this.dependencies.class, this.migrations, this.dependencies.class)
+
     }
 }
