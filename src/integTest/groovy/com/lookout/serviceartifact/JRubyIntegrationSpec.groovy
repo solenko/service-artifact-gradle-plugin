@@ -1,5 +1,6 @@
 package com.github.lookout.serviceartifact
 
+import groovy.json.JsonSlurper
 import spock.lang.*
 
 import org.gradle.api.Project
@@ -80,7 +81,7 @@ version = '${version}'
 
     Object zipContains(String zipPath, String expectedFile) {
         ZipFile zf = new ZipFile(new File(zipPath, projectDir))
-        return zf.entries().find { ZipEntry entry -> entry.name.matches(expectedFile) }
+        zf.entries().find { ZipEntry entry -> entry.name.matches(expectedFile) }
     }
 
 
@@ -164,4 +165,27 @@ service {
         zipContains(zipPath, "${projectName}-${version}/etc/metadata.conf")
     }
 
+    def "assemble should produce a zip file with a VERSION file"() {
+        given:
+        String versionPath = "${projectName}-${version}/VERSION"
+        JsonSlurper json = new JsonSlurper()
+        String zipPath = "build/distributions/${projectName}-${version}.zip"
+        buildFile << """
+service {
+  name '${projectName}'
+  component('api', type: JRuby) {
+  }
+}
+"""
+        expect:
+        runTasksSuccessfully('assemble')
+        fileExists(zipPath)
+
+        and: "it should contain VERSION"
+        zipContains(zipPath, versionPath)
+
+        and: "the VERSION file should be JSON"
+        ZipFile zf = new ZipFile(new File(zipPath, projectDir))
+        json.parseText(zf.getInputStream(zf.getEntry(versionPath)).text) instanceof Map
+    }
 }

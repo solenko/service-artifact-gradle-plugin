@@ -96,7 +96,6 @@ class ServiceArtifactExtension {
                     /* Pack the VERSION file containing some built metadata about
                      * this artifact to help trace it back to builds in the future
                      */
-                    logger.info("THIS IS: ${this.archiveDirName}")
                     archiveTask.into(this.archiveDirName) { from versionTask.outputs.files }
                     archiveTask.into("${this.archiveDirName}/etc") { from metadataTask.outputs.files }
                 }
