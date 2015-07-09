@@ -14,7 +14,7 @@ class GerritHandlerSpec extends Specification {
 
     def "isAvailable() should be false by default"() {
         given:
-        def handler = new GerritHandler([:])
+        def handler = new GerritHandler(null, [:])
 
         expect:
         !handler.isAvailable()
@@ -22,7 +22,7 @@ class GerritHandlerSpec extends Specification {
 
     def "isAvailable() should be true if the env has Gerrit env vars"() {
         given:
-        def handler = new GerritHandler(gerritEnv())
+        def handler = new GerritHandler(null, gerritEnv())
 
         expect:
         handler.isAvailable()
@@ -30,7 +30,7 @@ class GerritHandlerSpec extends Specification {
 
     def "getRevision() should return an empty string by default"() {
         given:
-        def handler = new GerritHandler([:])
+        def handler = new GerritHandler(null, [:])
 
         expect:
         handler.revision == ''
@@ -38,7 +38,7 @@ class GerritHandlerSpec extends Specification {
 
     def "getRevision() should return the GERRIT_PATCHSET_REVISION when present"() {
         given:
-        def handler = new GerritHandler(gerritEnv())
+        def handler = new GerritHandler(null, gerritEnv())
 
         expect:
         handler.revision == gerritEnv()['GERRIT_PATCHSET_REVISION']
@@ -46,7 +46,7 @@ class GerritHandlerSpec extends Specification {
 
     def "annotatedVersion() should include change and patchset numbers, and SHA1"() {
         given:
-        def handler = new GerritHandler(gerritEnv())
+        def handler = new GerritHandler(null, gerritEnv())
 
         when:
         String version = handler.annotatedVersion('1.0')

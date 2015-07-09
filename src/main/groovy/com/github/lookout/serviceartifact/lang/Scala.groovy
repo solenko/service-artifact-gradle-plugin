@@ -1,6 +1,6 @@
 package com.github.lookout.serviceartifact.lang
 
-import com.github.lookout.serviceartifact.AbstractServiceExtension
+import com.github.lookout.serviceartifact.AbstractArtifactExtension
 import com.github.lookout.serviceartifact.ServiceArtifactPlugin
 import org.gradle.api.Project
 import org.gradle.api.Task
@@ -9,7 +9,7 @@ import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 
 /**
  */
-class Scala extends AbstractServiceExtension {
+class Scala extends AbstractArtifactExtension {
     protected Project project
     /* TODO: make this a better property like Schalke has taught me */
     private String mainClass = ''
@@ -41,8 +41,10 @@ class Scala extends AbstractServiceExtension {
         }
         this.project.tasks.findByName('assemble').dependsOn(jar)
         this.project.artifacts.add(ServiceArtifactPlugin.ARCHIVES_CONFIG, jar)
+
         jar.configurations.add(this.project.configurations.getByName('compile'))
-        setupCompressedArchives(this.project, serviceExtension.scmHandler)
+
+        setupCompressedArchives(serviceExtension)
         disableJarTask()
     }
 

@@ -10,6 +10,10 @@ import org.gradle.api.tasks.bundling.Tar
 class ServiceArtifactPlugin implements Plugin<Project> {
     static final String GROUP_NAME = 'Service Artifact'
     static final String ARCHIVES_CONFIG = "serviceArchives"
+    static final String ZIP_TASK = 'serviceZip'
+    static final String TAR_TASK = 'serviceTar'
+    static final String VERSION_TASK  = 'serviceVersionInfo'
+    static final String METADATA_TASK = 'serviceMetadata'
 
     void apply(Project project) {
         /* Add the asciidoctor plugin because...docs are important */
@@ -17,14 +21,11 @@ class ServiceArtifactPlugin implements Plugin<Project> {
         /* Add the dependency-lcok plugin by default because that's important! */
         //project.apply plugin: 'nebula.dependency-lock'
 
+
         Object service = project.extensions.create('service',
                                                             ServiceArtifactExtension,
                                                             project,
                                                             System.env)
-
-        ServiceArtifactExtension.metaClass.jruby = { Closure extraConfig ->
-            new lang.JRuby(project).apply(delegate, extraConfig)
-        }
 
         ServiceArtifactExtension.metaClass.scala = { Closure extraConfig ->
             new lang.Scala(project).apply(delegate, extraConfig)
@@ -37,13 +38,13 @@ class ServiceArtifactPlugin implements Plugin<Project> {
             description "stub task for preparing the bin scripts for the artifact"
         }
 
-        Task tarTask = project.task('serviceTar', type: Tar) {
+        Task tarTask = project.task(TAR_TASK, type: Tar) {
             group GROUP_NAME
             description "Create a .tar.gz artifact containing the service"
             dependsOn prepareTask
         }
 
-        Task zipTask = project.task('serviceZip', type: Zip) {
+        Task zipTask = project.task(ZIP_TASK, type: Zip) {
             group GROUP_NAME
             description "Create a .zip artifact containing the service"
             dependsOn prepareTask
@@ -55,7 +56,7 @@ class ServiceArtifactPlugin implements Plugin<Project> {
             dependsOn zipTask, tarTask
         }
 
-        Task publishTask = project.task('publish') {
+        Task publishTask = project.task('publishService') {
             group GROUP_NAME
             description "Publish all our artifacts (uploadServiceArchives and uploadArchives)"
             dependsOn project.tasks.uploadArchives, project.tasks.uploadServiceArchives
@@ -63,5 +64,11 @@ class ServiceArtifactPlugin implements Plugin<Project> {
 
         project.artifacts.add(ARCHIVES_CONFIG, zipTask)
         project.artifacts.add(ARCHIVES_CONFIG, tarTask)
+
+        /* With everything defined, let's bootstrap the service extension internals */
+        service.bootstrap()
+        project.afterEvaluate {
+            service.afterEvaluateHook()
+        }
     }
 }

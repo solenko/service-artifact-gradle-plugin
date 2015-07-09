@@ -3,7 +3,6 @@ package com.github.lookout.serviceartifact
 import spock.lang.*
 
 import org.gradle.api.Project
-import org.gradle.api.Plugin
 import org.gradle.api.Task
 import org.gradle.api.tasks.bundling.Zip
 import org.gradle.api.tasks.bundling.Tar
@@ -82,9 +81,9 @@ class ServiceArtifactPluginSpec extends Specification {
     }
 
     @Issue('https://github.com/lookout/service-artifact-gradle-plugin/issues/22')
-    def "project should have a publish task"() {
+    def "project should have a publishService task"() {
         given:
-        Task t = project.tasks.findByName('publish')
+        Task t = project.tasks.findByName('publishService')
 
         expect:
         t instanceof Task
@@ -118,53 +117,6 @@ class ServiceArtifactPluginSpec extends Specification {
     }
 }
 
-
-class ServiceArtifactPluginWithJRubySpec extends ServiceArtifactPluginSpec {
-    boolean hasPlugins(Project project) {
-        return (project.plugins.findPlugin('com.github.jruby-gradle.base') &&
-                project.plugins.findPlugin('com.github.jruby-gradle.jar'))
-    }
-
-    void enableJRuby() {
-        project.version = '1.0'
-        project.service { jruby {} }
-    }
-
-    def "when using the jruby{} closure the plugin should be added"() {
-        given:
-        enableJRuby()
-
-        expect:
-        hasPlugins(project)
-    }
-
-
-    def "a serviceJar task should be present"() {
-        given:
-        enableJRuby()
-        Task jar = project.tasks.findByName('serviceJar')
-
-        expect:
-        jar instanceof Task
-    }
-
-    def "the default jar task should be disabled"() {
-        given:
-        enableJRuby()
-
-        expect:
-        project.tasks.findByName('jar').enabled == false
-    }
-
-    def "artifacts{} should include the jar archive"() {
-        given:
-        enableJRuby()
-        def c = project.configurations.findByName('serviceArchives')
-
-        expect:
-        c.artifacts.find { it.archiveTask.is project.tasks.findByName('serviceJar')}
-    }
-}
 
 class ServiceArtifactPluginWithScalaSpec extends ServiceArtifactPluginSpec {
     boolean hasPlugins(Project project) {

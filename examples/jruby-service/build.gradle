@@ -5,6 +5,8 @@ buildscript {
         maven {
           url "https://plugins.gradle.org/m2/"
         }
+
+        mavenLocal()
     }
 
     dependencies {
@@ -26,10 +28,17 @@ version = service.version('1.0')
 description = 'A sample JRuby service to built into an artifact'
 group = 'com.github.lookout.service-artifact'
 
-
 service {
-    jruby {
-        mainScript 'main.rb'
+    name 'example-service'
+    dependencies 'zookeeper', 'kafka'
+
+    component('api', type: JRuby) {
+        mainScript "${projectDir}/src/main/ruby/main.rb"
+    }
+
+    data {
+        dependencies 'example-redis', 'example-h2'
+        migrations fileTree(dir: projectDir, include: 'db/**/*.sql')
     }
 }
 
@@ -41,5 +50,5 @@ dependencies {
 
 /* Only present for integration testing */
 task runGradleTest {
-    dependsOn assembleService
+    dependsOn assemble
 }

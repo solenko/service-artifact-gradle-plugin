@@ -1,5 +1,7 @@
 buildscript {
     repositories {
+        jcenter()
+
         maven {
           url "https://plugins.gradle.org/m2/"
         }
@@ -21,28 +23,23 @@ buildscript {
 apply plugin: 'com.github.lookout.service-artifact'
 
 version = service.version('1.0')
-description = 'A sample Scala service to built into an artifact'
+description = 'An service composed of different components as sub-projects'
 group = 'com.github.lookout.service-artifact'
 
 service {
-    name 'example-service'
-    dependencies 'dataservice'
+    name 'multiproject-service'
+    dependencies 'zookeeper', 'kafka'
 
-    component('app', type: Scala) {
-        mainClass 'com.github.lookout.serviceartifact.BasicServer'
-    }
-}
+    /* components are defined in their sub-projects */
 
-repositories {
-    maven { url 'http://maven.twttr.com' }
-}
-
-dependencies {
-    compile 'com.twitter:twitter-server_2.10:1.10.0+'
+    //data {
+    //    dependencies 'example-redis', 'example-h2'
+    //    migrations files('db/**/*.sql')
+    //}
 }
 
 
 /* Only present for integration testing */
 task runGradleTest {
-    dependsOn assemble
+    dependsOn assembleService
 }

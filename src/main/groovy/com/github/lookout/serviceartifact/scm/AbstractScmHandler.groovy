@@ -1,7 +1,7 @@
 package com.github.lookout.serviceartifact.scm
 
 import groovy.transform.TypeChecked
-
+import org.gradle.api.Project
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory
 abstract class AbstractScmHandler {
     /** Supplied environment variables */
     protected Map<String, String> env
+    protected Project project
 
     protected Logger logger = LoggerFactory.getLogger(this.class)
 
@@ -24,7 +25,7 @@ abstract class AbstractScmHandler {
     abstract String annotatedVersion(String baseVersion)
 
     /** Build an instance of this handler */
-    static AbstractScmHandler build(Map<String, String> env) {
+    static AbstractScmHandler build(Project project, Map<String, String> env) {
         throw new NoSuchMethodException("A subclass of AbstractScmHandler has not implemented build()!")
     }
 

@@ -1,18 +1,33 @@
 package com.github.lookout.serviceartifact
 
+import org.gradle.api.tasks.StopExecutionException
 import spock.lang.*
 
 import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.testfixtures.ProjectBuilder
 
-class ServiceArtifactExtensionSpec extends Specification {
+import com.github.lookout.serviceartifact.scm.GerritHandler
+
+abstract class AppliedExtensionSpec extends Specification {
     protected Project project
 
     def setup() {
         this.project = ProjectBuilder.builder().build()
-    }
+        this.project.apply plugin: 'com.github.lookout.service-artifact'
 
+        this.project.service { name 'spock' }
+    }
+}
+
+class ServiceArtifactExtensionSpec extends Specification {
+    protected Project project
+    protected ServiceArtifactExtension extension
+
+    def setup() {
+        this.project = ProjectBuilder.builder().build()
+        this.extension = new ServiceArtifactExtension(this.project)
+    }
 
     /** Return a sample Gerrit environment for testing Gerrit specific
      * behaviors */
@@ -24,28 +39,17 @@ class ServiceArtifactExtensionSpec extends Specification {
     }
 
     def "should be construct-able"() {
-        given:
-        def extension = new ServiceArtifactExtension(this.project)
-
         expect:
         extension instanceof ServiceArtifactExtension
     }
-}
-
-
-class ServiceArtifactExtensionInstanceSpec extends ServiceArtifactExtensionSpec {
 
     def "getScmHandler() instantiate a handler instance"() {
         given: "we're inside of a Gerrit-triggered Jenkins job"
         def ext = new ServiceArtifactExtension(this.project, gerritEnv())
 
         expect:
-        ext.scmHandler instanceof scm.GerritHandler
+        ext.scmHandler instanceof GerritHandler
     }
-
-}
-
-class ServiceArtifactExtensionVersionSpec extends ServiceArtifactExtensionSpec {
 
     def "version() should return an unmolested string by default"() {
         given:
@@ -69,22 +73,122 @@ class ServiceArtifactExtensionVersionSpec extends ServiceArtifactExtensionSpec {
         then:
         version == '1.0.1.1+0xded'
     }
+
+    def "bootstrap() should define a serviceVersionInfo task"() {
+        when:
+        extension.bootstrap()
+
+        then:
+        this.project.tasks.findByName('serviceVersionInfo')
+    }
+
+    def "name() should add service:name to serviceMetadata"() {
+        given:
+        String serviceName = 'sample-service'
+
+        when:
+        extension.name serviceName
+
+        then:
+        extension.name == serviceName
+    }
+
+    def "dependencies() should take a list of strings"() {
+        when:
+        extension.dependencies 'one', 'two'
+
+        then:
+        extension.dependencies == ['one', 'two']
+    }
+
+    def "validateMetadata() should raise an exception if properties are not set"() {
+        when:
+        extension.validateMetadata()
+
+        then:
+        thrown(StopExecutionException)
+    }
+
+    def "validateMetadata() should not raise if name has been provided"() {
+        given:
+        extension.name 'some-name'
+
+        expect:
+        extension.validateMetadata()
+    }
+
+    def "generateVersionMap()"() {
+        given:
+        Map versionMap = extension.generateVersionMap()
+
+        expect:
+        versionMap instanceof Map
+        versionMap['version']
+        versionMap['name']
+        versionMap['buildDate']
+        /* since we're in a temp dir, our revision should be empty */
+        versionMap['revision'] == null
+        versionMap['builtOn']
+    }
+
+    def "component() DSL method must be given a 'type:' keyword-argument"() {
+        when:
+        extension.component('api', type: null) { }
+
+        then:
+        thrown(StopExecutionException)
+    }
+
+    def "data() DSL method with dependencies should store them"() {
+        when:
+        extension.data { dependencies 'redis' }
+
+        then:
+        extension.data.dependencies.contains 'redis'
+    }
+
+    def "data() DSL method with migrations should store them"() {
+        when:
+        extension.data { migrations "path/to/some.sql" }
+
+        then:
+        extension.data.migrations.contains "path/to/some.sql"
+    }
+
+    def "data() DSL method should allow me to use files() for migrations"() {
+        given:
+        File migration = new File(project.projectDir, 'test.sql')
+        migration.withWriter { Writer w -> w.write("hello world") }
+
+        when:
+        extension.data { migrations fileTree(dir: projectDir, include: '*.sql') }
+
+        then:
+        !extension.data.migrations.isEmpty()
+    }
 }
 
-class ServiceArtifactExtensionShadowSpec extends Specification {
-    protected Project project
+/**
+ * Test the functionality of the service { jruby{} } closure
+ */
+@Title("Verify ServiceArtifactExtension handles JRuby components properly")
+class ServiceArtifactExtensionJRubyIntegrationSpec extends AppliedExtensionSpec {
+    protected String componentName = 'api'
 
     def setup() {
-        this.project = ProjectBuilder.builder().build()
-        this.project.apply plugin: 'com.github.lookout.service-artifact'
-        this.project.service { jruby {} }
+        this.project.service {
+            name 'spockJRuby'
+            component(componentName, type: JRuby) {
+            }
+        }
     }
 
-    def "the serviceJar task must be present"() {
-        expect:
-        project.tasks.findByName('serviceJar')
+    def "an archiveTask should be present"() {
+        expect: "a task named 'assembleApi' exists since our component is named 'api'"
+        project.tasks.findByName('assembleApi')
     }
 
+    @Ignore
     def "the serviceJar baseName should be the same as the project name"() {
         given:
         project = ProjectBuilder.builder().withName('spock-shadow').build()
@@ -97,42 +201,32 @@ class ServiceArtifactExtensionShadowSpec extends Specification {
         project.tasks.findByName('serviceJar').baseName == project.name
     }
 
-    def "the serviceJar has a manifest"() {
+    def "the service artifact has a manifest"() {
         given:
-        def task = project.tasks.findByName('serviceJar')
+        Task task = project.tasks.findByName('assembleApi')
 
-        expect:
+        when:
+        project.evaluate()
+
+        then:
         task.manifest.attributes['Main-Class']
-
-    }
-}
-
-/**
- * Test the behaviors of the setupCompressedArchives() functionality
- */
-class ServiceArtifactExtensionArchivesSpec extends Specification {
-    protected Project project
-
-    def setup() {
-        this.project = ProjectBuilder.builder().build()
-        this.project.apply plugin: 'com.github.lookout.service-artifact'
-        this.project.service { jruby {} }
     }
 
-    def "the serviceTar task should depend on serviceJar"() {
+    def "the serviceTar task should depend on the service artifact task"() {
         given:
         Task tar = project.tasks.findByName('serviceTar')
+        String artifactTaskName = 'assembleApi'
 
         expect:
-        tar.dependsOn.find { (it instanceof Task) && (it.name == 'serviceJar') }
+        tar.dependsOn.find { (it instanceof Task) && (it.name == artifactTaskName) }
     }
 
-    def "the serviceZip task should depend on serviceJar"() {
+    def "the serviceZip task should depend on the service artifact task"() {
         given:
         Task tar = project.tasks.findByName('serviceZip')
+        String artifactTaskName = 'assembleApi'
 
         expect:
-        tar.dependsOn.find { (it instanceof Task) && (it.name == 'serviceJar') }
+        tar.dependsOn.find { (it instanceof Task) && (it.name == artifactTaskName) }
     }
 }
-
