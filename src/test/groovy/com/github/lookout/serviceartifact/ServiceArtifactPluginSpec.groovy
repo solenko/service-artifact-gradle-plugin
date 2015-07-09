@@ -88,7 +88,6 @@ class ServiceArtifactPluginSpec extends Specification {
         expect:
         t instanceof Task
         t.group == ServiceArtifactPlugin.GROUP_NAME
-        t.dependsOn.contains(project.tasks.findByName('uploadArchives'))
         t.dependsOn.contains(project.tasks.findByName('uploadServiceArchives'))
     }
 
