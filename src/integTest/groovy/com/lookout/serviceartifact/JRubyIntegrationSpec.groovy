@@ -133,6 +133,25 @@ service {
         zipContains(jarPath, 'app.rb')
     }
 
+    def "assembleApi with task-based includes should include them in the jar"() {
+        given:
+        String jarPath = "build/libs/${projectName}-jruby-${version}.jar"
+        buildFile << """
+service {
+  name '${projectName}'
+  component('api', type: JRuby) {
+    include project.tasks.serviceVersionInfo.outputs.files
+  }
+}
+"""
+        expect:
+        runTasksSuccessfully('assembleApi')
+        fileExists(jarPath)
+
+        and: "it should contain serviceVersionInfo outputs"
+        zipContains(jarPath, 'VERSION')
+    }
+
     def "assembleApi should produce a valid executable jar"() {
         given:
         String jarPath = "build/libs/${projectName}-jruby-${version}.jar"

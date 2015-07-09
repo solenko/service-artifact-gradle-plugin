@@ -4,6 +4,7 @@ import com.github.lookout.serviceartifact.AbstractComponent
 import com.github.lookout.serviceartifact.ServiceArtifactPlugin
 import org.gradle.api.Project
 import org.gradle.api.Task
+import org.gradle.api.file.FileCollection
 
 import com.github.jrubygradle.jar.JRubyJar
 import org.gradle.api.tasks.Optional
@@ -62,10 +63,13 @@ class JRubyComponent extends AbstractComponent {
         }
 
         arguments.each { Object path ->
+            if (path instanceof FileCollection) {
+                artifactTask.from path
+            }
             /* If the arg is a directory, we want to put that into the jar
              * with the same name, not changing the path at all
              */
-            if ((new File(path)).isDirectory()) {
+            else if ((new File(path)).isDirectory()) {
                 artifactTask.from(this.project.projectDir) { include "${path}/**" }
             }
             else {
