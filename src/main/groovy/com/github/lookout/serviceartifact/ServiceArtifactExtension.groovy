@@ -16,12 +16,19 @@ import com.github.lookout.serviceartifact.metadata.Data
  * use the plugin
  */
 class ServiceArtifactExtension {
-    protected final Project project
-
+    /** DSL helper to allow users to refer to the JRubyComponent by the JRuby
+     * constant
+     */
     static final Class<AbstractComponent> JRuby = JRubyComponent
 
+
+    protected Logger logger = LoggerFactory.getLogger(ServiceArtifactExtension)
+    protected final Project project
     protected final Map<String, String> env
-    protected Logger logger = LoggerFactory.getLogger(ServiceArtifactExtension.class)
+
+    /** Disable the built-in jar tasks by default */
+    protected boolean defaultJarTaskEnabled = false
+
     /** List of scm handler classes, in priority order */
     private final List<Class<AbstractScmHandler>> scmHandlerImpls = [
             scm.GerritHandler.class,
@@ -30,15 +37,13 @@ class ServiceArtifactExtension {
     /** SCM Handler appropriate for this execution */
     protected AbstractScmHandler _scmHandler
 
-    /** Map of metadata that should be written into the artifact's etc/metadata.conf */
-    protected Metadata metadata
-
     /** Name of the service of which our artifact is a part */
     protected String serviceName = null
     /** List of services that this service depends on */
     protected List<String> serviceDependencies = []
     /** Data container object for implementing the data {} DSL */
     protected Data data
+
 
     ServiceArtifactExtension(final Project project) {
         this(project, [:])
@@ -49,7 +54,6 @@ class ServiceArtifactExtension {
         this.project = project
         this.env = env
 
-        this.metadata = new Metadata(project.name, project.name, project.version)
         this.data = new Data(project)
     }
 
@@ -73,60 +77,6 @@ class ServiceArtifactExtension {
         }
     }
 
-    /**
-     *
-     * @return A map containing the necessary version information we want to drop into archives
-     */
-    Map<String, Object> generateVersionMap() {
-        return [
-                'version' : this.project.version,
-                'name' : this.project.name,
-                'buildDate' : new Date(),
-                'revision': scmHandler?.revision,
-                'builtOn': this.hostname,
-        ]
-    }
-
-    /**
-     * Return a hostname or unknown if we can't resolve our localhost (as seen on Mavericks)
-     *
-     * @return Local host's name or 'unknown'
-     */
-    String getHostname() {
-        try {
-            return InetAddress.localHost.hostName
-        }
-        catch (UnknownHostException) {
-            return 'unknown'
-        }
-    }
-
-    /**
-     * @return A (name)-(version) String for the directory name inside a compressed archive
-     */
-    String getArchiveDirName() {
-        return String.format("%s-%s", this.project.name, this.project.version)
-    }
-
-    /**
-     * Lazily look up our SCM Handler
-     */
-    AbstractScmHandler getScmHandler() {
-        if (this._scmHandler != null) {
-            return this._scmHandler
-        }
-
-        this.scmHandlerImpls.find {
-            AbstractScmHandler handler = it.build(this.project, this.env)
-
-            if (handler.isAvailable()) {
-                this._scmHandler = handler
-                return true
-            }
-        }
-
-        return this._scmHandler
-    }
 
     /**
      * Return the appropriately computed version string based on our executing
@@ -138,25 +88,6 @@ class ServiceArtifactExtension {
         }
 
         return baseVersion
-    }
-
-    /**
-     * Return the computed Map<> of metadata that is to be written to the etc/metadata.conf
-     * inside of the service artifact
-     */
-    Metadata getMetadata() {
-        return this.metadata
-    }
-
-    void metadata(Object... arguments) {
-        arguments.each {
-            this.metadata.putAll(it as Map)
-        }
-    }
-
-    void setMetadata(Object... arguments) {
-        this.metadata = [:]
-        this.metadata arguments
     }
 
     /**
@@ -175,18 +106,22 @@ class ServiceArtifactExtension {
         throw new StopExecutionException("Missing required metadata fields")
     }
 
+    /** set the service name */
     void name(String name) {
         this.serviceName = name
     }
 
+    /** access the configured service name */
     String getName() {
         return this.serviceName
     }
 
+    /** set the service's service dependencies */
     void dependencies(Object... arguments) {
         this.serviceDependencies = arguments as List<String>
     }
 
+    /** access the configured service dependencies */
     List<String> getDependencies() {
         return this.serviceDependencies
     }
@@ -236,8 +171,101 @@ class ServiceArtifactExtension {
     }
 
 
+    /**
+     * set whether the plugin should disable the default jar task provided by
+     * underlying plugins (e.g. 'java' or 'groovy')
+     */
+    void defaultJarEnabled(boolean status) {
+        this.defaultJarTaskEnabled = status
+    }
+
+    boolean getDefaultJarEnabled() {
+        return this.defaultJarTaskEnabled
+    }
+
+    /**
+     * Internal hook to be called after the project has completed its
+     * evaluation phase
+     */
     void afterEvaluateHook() {
         this.validateMetadata()
+        this.disableDefaultJarTask()
+    }
+
+
+    /**
+     * if configured as such, disable the default jar task and remove its
+     * artifacts from the `archives` configuration
+     */
+    private void disableDefaultJarTask() {
+        /* bail out early if we should leave it alone */
+        if (defaultJarTaskEnabled) {
+            return
+        }
+
+        Task jar = project.tasks.findByName('jar')
+
+        if (jar instanceof Task) {
+            jar.enabled = false
+            /* also purge the jar task from our archives configuration */
+            project.configurations.archives.artifacts.removeAll {
+                it.archiveTask.is jar
+            }
+        }
+    }
+
+    /**
+     *
+     * @return A map containing the necessary version information we want to drop into archives
+     */
+    private Map<String, Object> generateVersionMap() {
+        return [
+                'version' : this.project.version,
+                'name' : this.project.name,
+                'buildDate' : new Date(),
+                'revision': scmHandler?.revision,
+                'builtOn': this.hostname,
+        ]
+    }
+
+    /**
+     * Return a hostname or unknown if we can't resolve our localhost (as seen on Mavericks)
+     *
+     * @return Local host's name or 'unknown'
+     */
+    private String getHostname() {
+        try {
+            return InetAddress.localHost.hostName
+        }
+        catch (UnknownHostException) {
+            return 'unknown'
+        }
+    }
+
+    /**
+     * Lazily look up our SCM Handler
+     */
+    private AbstractScmHandler getScmHandler() {
+        if (this._scmHandler != null) {
+            return this._scmHandler
+        }
+
+        this.scmHandlerImpls.find {
+            AbstractScmHandler handler = it.build(this.project, this.env)
+
+            if (handler.isAvailable()) {
+                this._scmHandler = handler
+                return true
+            }
+        }
+
+        return this._scmHandler
+    }
+
+    /**
+     * @return A (name)-(version) String for the directory name inside a compressed archive
+     */
+    private String getArchiveDirName() {
+        return String.format("%s-%s", this.project.name, this.project.version)
     }
 }
-
