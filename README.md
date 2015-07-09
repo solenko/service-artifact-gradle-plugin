@@ -24,7 +24,7 @@ This plugin will include the appropriate versions of the following plugins:
 
 ```gradle
 plugins {
-    id "com.github.lookout.service-artifact" version "0.1.10"
+    id "com.github.lookout.service-artifact" version "0.4.0"
 }
 
 /* serviceVersion is a helper method which will add SNAPSHOT when appropriate,
@@ -50,22 +50,15 @@ group = 'com.github.lookout'
  */
 
 service {
-    jruby {
+    name "amazingserv"
+
+    component("app", type: JRuby) {
         /* Include these directories into the service jar.
          *
          * By default everything in src/main/ruby will be included
          */
         include 'backend', 'lib'
         mainScript 'backend/main'
-    }
-
-    /* scripts inside of bin/ will override the defaults,
-     * but this closure can be used to source additional scripts
-     *
-     * NOTE: NOT YET IMPLEMENTED
-     */
-    scripts {
-        include 'examples/bin'
     }
 }
 
@@ -81,25 +74,15 @@ dependencies {
 
 #### Build
 
-* serviceTarGz
-* serviceZip
-* serviceJar
-* assemble
+* **assemble** prepare all the service artifacts
 
 #### Test
 
-* (JRuby) spec
-* (JRuby) cucumber
 * check
 
 #### Publish
 
 * publish
-
-#### Internal-ish
-
-* prepareServiceScripts - empty by default, can be used to set up build logic to generate service scripts
-* prepareServiceJar - largely empty right now, just a standard dependency to chain builder tasks like `shadowJar` for jruby-gradle-jar plugin off of.
 
 #### Documentation
 
