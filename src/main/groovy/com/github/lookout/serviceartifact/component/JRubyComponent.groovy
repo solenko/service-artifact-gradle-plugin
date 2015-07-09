@@ -85,6 +85,8 @@ class JRubyComponent extends AbstractComponent {
     protected Task createJRubyJarTask(Project project, String taskName) {
         logger.info("Defining a task named ${taskName} of type JRubyJar")
 
+        String mainScript = this.mainScript
+
         Task jar = project.task(taskName, type: JRubyJar) {
             group ServiceArtifactPlugin.GROUP_NAME
             description "Build a JRuby-based service jar"
@@ -98,19 +100,12 @@ class JRubyComponent extends AbstractComponent {
             exclude '*.swp', '*.gitkeep', '*.md',
                     'META-INF/INDEX.LIST', 'META-INF/*.SF',
                     'META-INF/*.DSA', 'META-INF/*.RSA'
-        }
 
-        project.afterEvaluate {
-            String mainScript = this.mainScript
-
-            jar.jruby {
-                defaultMainClass()
-                defaultGems()
-                /* We will default to a runnable() jar unless somebody tells
-                 * us otherwise
-                 */
-                initScript mainScript ?: runnable()
-            }
+            defaultGems()
+            /* We will default to a runnable() jar unless somebody tells
+             * us otherwise
+             */
+            initScript mainScript ?: runnable()
         }
 
         return jar
