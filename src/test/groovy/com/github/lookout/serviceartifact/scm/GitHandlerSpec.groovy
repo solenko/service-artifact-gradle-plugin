@@ -68,4 +68,16 @@ class GitHandlerSpec extends Specification {
         then:
         version == '1.0.1'
     }
+
+    def "annotatedVersion() when a Travis TRAVIS_BUILD_NUMBER is available it should include it"() {
+        given:
+        _ * handler.getProperty('environment') >> ['TRAVIS_BUILD_NUMBER' : '1']
+        1 * handler.findGitRoot(_) >> null
+
+        when:
+        String version = handler.annotatedVersion('1.0')
+
+        then:
+        version == '1.0.1'
+    }
 }

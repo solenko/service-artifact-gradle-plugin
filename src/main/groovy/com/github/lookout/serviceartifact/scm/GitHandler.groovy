@@ -29,11 +29,25 @@ class GitHandler extends AbstractScmHandler {
         return this.git?.head().abbreviatedId
     }
 
+    /**
+     * Return the build number present in the environment as defined by the CI
+     * system. This supports BUILD_NUMBER (Jenkins) and TRAVIS_BUILD_NUMBER
+     * (Travis CI)
+     *
+     */
+    String getBuildNumberFromCI() {
+        return this.environment.BUILD_NUMBER ?: this.environment.TRAVIS_BUILD_NUMBER
+    }
+
+
+    /**
+     * return an annotated version with the CI and Git metadata added
+     */
     String annotatedVersion(String baseVersion) {
-        if (this.environment['BUILD_NUMBER']) {
+        if (this.buildNumberFromCI) {
             baseVersion = String.format("%s.%s",
                                         baseVersion,
-                                        this.environment['BUILD_NUMBER'])
+                                        this.buildNumberFromCI)
         }
         if (this.git == null) {
             return baseVersion
