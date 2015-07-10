@@ -8,9 +8,15 @@ import org.ajoberstar.grgit.Repository
 
 class GitHandlerSpec extends Specification {
     def handler
+    Map<String, String> env = [:]
 
     def setup() {
-        this.handler = Spy(GitHandler, constructorArgs: [null, [:]])
+        handlerSpy()
+    }
+
+    def handlerSpy() {
+        this.handler = Spy(GitHandler, constructorArgs: [null, this.env])
+        return this.handler
     }
 
     def "isAvailable() should be false by default"() {
@@ -59,7 +65,8 @@ class GitHandlerSpec extends Specification {
 
     def "annotateVersion() when a Jenkins BUILD_NUMBER is available should include it"() {
         given:
-        _ * handler.getProperty('environment') >> ['BUILD_NUMBER' : '1']
+        this.env = ['BUILD_NUMBER' : '1']
+        handlerSpy()
         1 * handler.findGitRoot(_) >> null
 
         when:
@@ -71,7 +78,8 @@ class GitHandlerSpec extends Specification {
 
     def "annotatedVersion() when a Travis TRAVIS_BUILD_NUMBER is available it should include it"() {
         given:
-        _ * handler.getProperty('environment') >> ['TRAVIS_BUILD_NUMBER' : '1']
+        this.env = ['TRAVIS_BUILD_NUMBER' : '1']
+        handlerSpy()
         1 * handler.findGitRoot(_) >> null
 
         when:

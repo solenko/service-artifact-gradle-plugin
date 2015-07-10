@@ -36,7 +36,7 @@ class GitHandler extends AbstractScmHandler {
      *
      */
     String getBuildNumberFromCI() {
-        return this.environment.BUILD_NUMBER ?: this.environment.TRAVIS_BUILD_NUMBER
+        return this.env.BUILD_NUMBER ?: this.env.TRAVIS_BUILD_NUMBER
     }
 
 

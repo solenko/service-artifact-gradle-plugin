@@ -58,8 +58,8 @@ class ServiceArtifactPlugin implements Plugin<Project> {
 
         Task publishTask = project.task('publishService') {
             group GROUP_NAME
-            description "Publish all our artifacts (uploadServiceArchives and uploadArchives)"
-            dependsOn project.tasks.uploadArchives, project.tasks.uploadServiceArchives
+            description "Publish all our artifacts (uploadServiceArchives"
+            dependsOn project.tasks.uploadServiceArchives
         }
 
         project.artifacts.add(ARCHIVES_CONFIG, zipTask)
@@ -67,6 +67,7 @@ class ServiceArtifactPlugin implements Plugin<Project> {
 
         /* With everything defined, let's bootstrap the service extension internals */
         service.bootstrap()
+
         project.afterEvaluate {
             service.afterEvaluateHook()
         }
