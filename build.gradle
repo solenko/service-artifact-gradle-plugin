@@ -23,7 +23,7 @@ apply plugin: "com.gradle.plugin-publish"
 apply plugin: 'org.ysb33r.gradletest'
 apply plugin: 'nebula.nebula-integtest'
 
-version = '0.4.0'
+version = '0.4.1'
 group = 'com.github.lookout'
 description = 'Gradle plugin for building a prim and proper Lookout service artifact'
 
