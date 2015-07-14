@@ -59,33 +59,31 @@ class AbstractComponentSpec extends Specification {
         component.name == name
     }
 
-    def "chainCompressedArchives() should fail if the provided task name doesn't exist"() {
+    def "createCompressedTasks() should create a custom Zip task"() {
         given:
-        String taskName = 'spockTar'
+        String expectedTask = 'assembleSpockZip'
 
         when:
         component.apply(project, null, 'spock')
 
         then:
-        component.chainCompressedArchives(taskName) == false
+        component.createCompressedTasks()
+
+        and:
+        project.tasks.findByName(expectedTask)
     }
 
-    def "chainCompressedArchives() should tie artifactTask to the given task names"() {
+    def "createCompressedTasks() should create a custom Tar task"() {
         given:
-        Task compressedArchive = project.tasks.create('spockTar')
-        Task artifactTask = project.tasks.create('assembleSpockJar')
-        def result
+        String expectedTask = 'assembleSpockTar'
 
         when:
         component.apply(project, null, 'spock')
-        component.artifactTask = artifactTask
-        result = component.chainCompressedArchives(compressedArchive.name)
 
-        then: "the call to return true"
-        result == true
+        then:
+        component.createCompressedTasks()
 
-        and: "the compressedArchive task to depend on the artifactTask"
-        compressedArchive.dependsOn.contains(artifactTask)
-
+        and:
+        project.tasks.findByName(expectedTask)
     }
 }

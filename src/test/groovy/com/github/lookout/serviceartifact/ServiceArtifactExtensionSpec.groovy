@@ -211,21 +211,27 @@ class ServiceArtifactExtensionJRubyIntegrationSpec extends AppliedExtensionSpec 
         task.manifest.attributes['Main-Class']
     }
 
-    def "the serviceTar task should depend on the service artifact task"() {
+    def "the assembleApiTar task should depend on the service artifact task"() {
         given:
-        Task tar = project.tasks.findByName('serviceTar')
+        Task tar = project.tasks.findByName('assembleApiTar')
         String artifactTaskName = 'assembleApi'
 
-        expect:
+        when:
+        project.evaluate()
+
+        then:
         tar.dependsOn.find { (it instanceof Task) && (it.name == artifactTaskName) }
     }
 
-    def "the serviceZip task should depend on the service artifact task"() {
+    def "the assembleApiZip task should depend on the service artifact task"() {
         given:
-        Task tar = project.tasks.findByName('serviceZip')
+        Task zip = project.tasks.findByName('assembleApiZip')
         String artifactTaskName = 'assembleApi'
 
-        expect:
-        tar.dependsOn.find { (it instanceof Task) && (it.name == artifactTaskName) }
+        when:
+        project.evaluate()
+
+        then:
+        zip.dependsOn.find { (it instanceof Task) && (it.name == artifactTaskName) }
     }
 }
