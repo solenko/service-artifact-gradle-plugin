@@ -3,6 +3,8 @@ package com.github.lookout.serviceartifact
 import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.tasks.StopExecutionException
+import org.gradle.api.tasks.bundling.Zip
+import org.gradle.api.tasks.bundling.Tar
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -55,13 +57,20 @@ abstract class AbstractComponent {
             }
         }
 
+        Task zipTask = createZipTask(this.project, this.name)
+        Task tarTask = createTarTask(this.project, this.name)
+
         /* setting this up last so archiveDirName gets the right version and other things */
         project.afterEvaluate {
-            [ServiceArtifactPlugin.TAR_TASK, ServiceArtifactPlugin.ZIP_TASK].each {
+            /* Link our generic serviceTar to our custom tar task */
+            project.tasks.findByName(ServiceArtifactPlugin.TAR_TASK).dependsOn(tarTask)
+            project.tasks.findByName(ServiceArtifactPlugin.ZIP_TASK).dependsOn(zipTask)
+
+            [tarTask, zipTask].each { Task archiveTask ->
                 Task versionTask = this.project.tasks.findByName(ServiceArtifactPlugin.VERSION_TASK)
-                Task archiveTask = this.project.tasks.findByName(it)
 
                 if (archiveTask instanceof Task) {
+                    archiveTask.dependsOn(this.artifactTask)
                     archiveTask.dependsOn(versionTask)
                     archiveTask.dependsOn(metadataTask)
                     /* Pack the VERSION file containing some built metadata about
@@ -75,27 +84,21 @@ abstract class AbstractComponent {
                 }
             }
         }
-    }
-
-    /**
-     * Chain together artifact tasks
-     */
-    boolean chainCompressedArchives(Object... taskNames) {
-        Project project = this.project
-        Task artifactTask =  this.artifactTask
-
-        if (!taskNames.findAll { project.tasks.findByName(it) }) {
-            return false
-        }
-
-        taskNames.each { String taskName ->
-            Task archiveTask = project.tasks.findByName(taskName)
-
-            if (archiveTask && artifactTask) {
-                archiveTask.dependsOn(artifactTask)
-            }
-        }
 
         return true
+    }
+
+    private Zip createZipTask(Project project, String name) {
+        return project.task("assemble${name.capitalize()}Zip", type: Zip) {
+            group ServiceArtifactPlugin.GROUP_NAME
+            description "Create a .zip artifact containing the ${name} service"
+        }
+    }
+
+    private Tar createTarTask(Project project, String name) {
+        return project.task("assemble${name.capitalize()}Tar", type: Tar) {
+            group ServiceArtifactPlugin.GROUP_NAME
+            description "Create a .tar artifact containing the ${name} service"
+        }
     }
 }

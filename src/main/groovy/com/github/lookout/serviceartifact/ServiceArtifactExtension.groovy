@@ -148,7 +148,6 @@ class ServiceArtifactExtension {
 
         AbstractComponent instance = keywordArguments.type.newInstance()
         instance.apply(this.project, this, name)
-        instance.chainCompressedArchives('serviceTar', 'serviceZip')
         instance.createCompressedTasks(this.archiveDirName)
 
         configurationSpec.delegate = instance

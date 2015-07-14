@@ -14,6 +14,7 @@ class ServiceArtifactPlugin implements Plugin<Project> {
     static final String TAR_TASK = 'serviceTar'
     static final String VERSION_TASK  = 'serviceVersionInfo'
     static final String METADATA_TASK = 'serviceMetadata'
+    static final String PREPARE_SCRIPTS_TASK = 'prepareServiceScripts'
 
     void apply(Project project) {
         /* Add the asciidoctor plugin because...docs are important */
@@ -33,7 +34,7 @@ class ServiceArtifactPlugin implements Plugin<Project> {
 
         Configuration archive = project.configurations.create(ARCHIVES_CONFIG)
 
-        Task prepareTask = project.task('prepareServiceScripts') {
+        Task prepareTask = project.task(PREPARE_SCRIPTS_TASK) {
             group GROUP_NAME
             description "stub task for preparing the bin scripts for the artifact"
         }
