@@ -49,9 +49,7 @@ class JRubyComponent extends AbstractComponent {
     void mainScript(String mainRbScript) {
         logger.info("Using ${mainRbScript} as the entry point for the JRuby artifact")
         this.mainScript = mainRbScript
-        artifactTask.jruby {
-            initScript mainRbScript
-        }
+        artifactTask.initScript mainRbScript
     }
 
     /**
@@ -101,7 +99,6 @@ class JRubyComponent extends AbstractComponent {
                     'META-INF/INDEX.LIST', 'META-INF/*.SF',
                     'META-INF/*.DSA', 'META-INF/*.RSA'
 
-            defaultGems()
             /* We will default to a runnable() jar unless somebody tells
              * us otherwise
              */
