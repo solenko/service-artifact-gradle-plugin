@@ -11,7 +11,7 @@ cache:
     - $HOME/.gradle
 
 install:
-  - ./gradlew clean
+  - ./gradlew clean > /dev/null
 
 script:
-  - ./gradlew --info --full-stacktrace
+  - ./gradlew --info --full-stacktrace | sed s/^.*DEBUG.*$//
