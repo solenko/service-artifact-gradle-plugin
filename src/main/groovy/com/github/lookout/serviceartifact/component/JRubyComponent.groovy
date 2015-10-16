@@ -103,6 +103,8 @@ class JRubyComponent extends AbstractComponent {
              * us otherwise
              */
             initScript mainScript ?: runnable()
+
+            configuration 'gems'
         }
 
         return jar
