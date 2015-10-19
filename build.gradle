@@ -21,7 +21,11 @@ apply plugin: 'idea'
 apply plugin: "com.jfrog.bintray"
 apply plugin: "com.gradle.plugin-publish"
 apply plugin: 'org.ysb33r.gradletest'
-apply plugin: 'nebula.nebula-integtest'
+
+String java17 = System.getProperty('java.version').startsWith('1.7.')
+if (!java17 ) {
+    apply plugin: 'nebula.nebula-integtest'
+}
 
 version = '0.4.4'
 group = 'com.github.lookout'
@@ -77,11 +81,13 @@ dependencies {
     testCompile 'cglib:cglib-nodep:2.2.+'
 
 
-    integTestCompile('com.netflix.nebula:nebula-test:2.2.2+') {
-        /* the nebula-test dependency pulls in a conflicting version of Groovy
-         * so let's use the one we already have sitting around
-         */
-        exclude module: 'groovy-all'
+    if (!java17) {
+        integTestCompile('com.netflix.nebula:nebula-test:2.2.2+') {
+            /* the nebula-test dependency pulls in a conflicting version of Groovy
+             * so let's use the one we already have sitting around
+             */
+            exclude module: 'groovy-all'
+        }
     }
 }
 ////////////////////////
@@ -113,14 +119,16 @@ gradleTest {
     dependsOn jar
 }
 
-integrationTest.testLogging {
-    /* we want more test failure information, see:
-     *  <http://mrhaki.blogspot.com/2013/05/gradle-goodness-show-more-information.html>
-     */
-    exceptionFormat = 'full'
-    events "passed", "skipped", "failed", "standardOut", "standardError"
+if (!java17) {
+    integrationTest.testLogging {
+        /* we want more test failure information, see:
+         *  <http://mrhaki.blogspot.com/2013/05/gradle-goodness-show-more-information.html>
+         */
+        exceptionFormat = 'full'
+        events "passed", "skipped", "failed", "standardOut", "standardError"
+    }
+    check.dependsOn integrationTest
 }
-check.dependsOn integrationTest
 
 codenarc {
     sourceSets = [sourceSets.main]
